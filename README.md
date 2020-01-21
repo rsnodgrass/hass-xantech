@@ -4,7 +4,7 @@ NOTE: This is a fork of the Home Assistant monoprice controller. Ideally the goa
 is to merge this back together with an amp controller that works for both since
 they use almost the same protocol.
 
-Install [HACS](https://hacs.xyz/), add this repository, and configure like the monoprice component here:
+Install [HACS](https://hacs.xyz/), add this repository 'rsnodgrass/hass-xantech', and configure like the monoprice component here:
 https://www.home-assistant.io/integrations/monoprice/
 
 **except with `xantech` as the platform**
