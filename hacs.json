@@ -1,0 +1,5 @@
+{
+  "name": "Xantech Amplifier Control",
+  "domains": ["media_player"],
+  "render_readme": true
+}
