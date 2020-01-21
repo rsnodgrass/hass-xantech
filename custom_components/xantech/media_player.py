@@ -74,10 +74,10 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
 def setup_platform(hass, config, add_entities, discovery_info=None):
     """Set up the Xantech 8-zone amplifier platform."""
     port = config.get(CONF_PORT)
-    protocol = config.get(CONF_PROTOCOL)
+    type = config.get(CONF_TYPE)
 
     try:
-        amp = get_amp_controller(protocol, port)
+        amp = get_amp_controller(type, port)
     except SerialException:
         _LOGGER.error("Error connecting to '%s' amplifier using %s", protocol, port)
         return
