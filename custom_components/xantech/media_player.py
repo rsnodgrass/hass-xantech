@@ -44,7 +44,7 @@ CONF_TYPE = "type"
 CONF_SOURCES = "sources"
 CONF_ZONES = "zones"
 
-DATA_XANTECH = "xantech"
+DATA_MATRIX_AMPS = "matrix_amps"
 
 AMP_TYPES = [ "monoprice6", "xantech8" ]
 
@@ -52,11 +52,13 @@ AMP_TYPES = [ "monoprice6", "xantech8" ]
 ZONE_IDS = vol.All(
     vol.Coerce(int),
     vol.Any(
+        # FIXME: make configurable max zones (monoprice 6, xantech 8)
         vol.Range(min=11, max=18), vol.Range(min=21, max=28), vol.Range(min=31, max=38) # XANTECH
     ),
 )
 
 # Valid source ids: 1-6
+# FIXME: make configurable max zones (monoprice 6, xantech 8)
 SOURCE_IDS = vol.All(vol.Coerce(int), vol.Range(min=1, max=8)) # XANTECH
 
 MEDIA_PLAYER_SCHEMA = vol.Schema({ATTR_ENTITY_ID: cv.comp_entity_ids})
@@ -70,30 +72,29 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     }
 )
 
-
 def setup_platform(hass, config, add_entities, discovery_info=None):
     """Set up the Xantech 8-zone amplifier platform."""
     port = config.get(CONF_PORT)
-    type = config.get(CONF_TYPE)
+    amp_type = config.get(CONF_TYPE)
 
     try:
-        amp = get_amp_controller(type, port)
+        amp = get_amp_controller(amp_type, port)
     except SerialException:
-        _LOGGER.error("Error connecting to '%s' amplifier using %s", protocol, port)
+        _LOGGER.error("Error connecting to '%s' amplifier using %s", amp_type, port)
         return
 
     sources = {
         source_id: extra[CONF_NAME] for source_id, extra in config[CONF_SOURCES].items()
     }
 
-    hass.data[DATA_XANTECH] = []
+    hass.data[DATA_MATRIX_AMPS] = []
     for zone_id, extra in config[CONF_ZONES].items():
-        _LOGGER.info("Adding zone %d - %s", zone_id, extra[CONF_NAME])
-        hass.data[DATA_XANTECH].append(
-            AmpZone(xantech, sources, zone_id, extra[CONF_NAME])
+        _LOGGER.info("Adding %s zone %d - %s", amp_type, zone_id, extra[CONF_NAME])
+        hass.data[DATA_MATRIX_AMPS].append(
+            AmpZone(amp, sources, zone_id, extra[CONF_NAME])
         )
 
-    add_entities(hass.data[DATA_XANTECH], True)
+    add_entities(hass.data[DATA_MATRIX_AMPS], True)
 
     def service_handle(service):
         """Handle for services."""
@@ -102,11 +103,11 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
         if entity_ids:
             devices = [
                 device
-                for device in hass.data[DATA_XANTECH]
+                for device in hass.data[DATA_MATRIX_AMPS]
                 if device.entity_id in entity_ids
             ]
         else:
-            devices = hass.data[DATA_XANTECH]
+            devices = hass.data[DATA_MATRIX_AMPS]
 
         for device in devices:
             if service.service == SERVICE_SNAPSHOT:
@@ -126,9 +127,9 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
 class AmpZone(MediaPlayerDevice):
     """Representation of a Xantech amplifier zone."""
 
-    def __init__(self, xantech, sources, zone_id, zone_name):
+    def __init__(self, amp, sources, zone_id, zone_name):
         """Initialize new zone."""
-        self._xantech = xantech
+        self._amp = amp
         # dict source_id -> source name
         self._source_id_name = sources
         # dict source name -> source_id
@@ -148,7 +149,7 @@ class AmpZone(MediaPlayerDevice):
 
     def update(self):
         """Retrieve latest state."""
-        state = self._xantech.zone_status(self._zone_id)
+        state = self._amp.zone_status(self._zone_id)
         if not state:
             return False
         self._state = STATE_ON if state.power else STATE_OFF
@@ -205,12 +206,12 @@ class AmpZone(MediaPlayerDevice):
 
     def snapshot(self):
         """Save zone's current state."""
-        self._snapshot = self._xantech.zone_status(self._zone_id)
+        self._snapshot = self._amp.zone_status(self._zone_id)
 
     def restore(self):
         """Restore saved state."""
         if self._snapshot:
-            self._xantech.restore_zone(self._snapshot)
+            self._amp.restore_zone(self._snapshot)
             self.schedule_update_ha_state(True)
 
     def select_source(self, source):
@@ -218,32 +219,32 @@ class AmpZone(MediaPlayerDevice):
         if source not in self._source_name_id:
             return
         idx = self._source_name_id[source]
-        self._xantech.set_source(self._zone_id, idx)
+        self._amp.set_source(self._zone_id, idx)
 
     def turn_on(self):
         """Turn the media player on."""
-        self._xantech.set_power(self._zone_id, True)
+        self._amp.set_power(self._zone_id, True)
 
     def turn_off(self):
         """Turn the media player off."""
-        self._xantech.set_power(self._zone_id, False)
+        self._amp.set_power(self._zone_id, False)
 
     def mute_volume(self, mute):
         """Mute (true) or unmute (false) media player."""
-        self._xantech.set_mute(self._zone_id, mute)
+        self._amp.set_mute(self._zone_id, mute)
 
     def set_volume_level(self, volume):
         """Set volume level, range 0..1."""
-        self._xantech.set_volume(self._zone_id, int(volume * 38))
+        self._amp.set_volume(self._zone_id, int(volume * 38))
 
     def volume_up(self):
         """Volume up the media player."""
         if self._volume is None:
             return
-        self._xantech.set_volume(self._zone_id, min(self._volume + 1, 38))
+        self._amp.set_volume(self._zone_id, min(self._volume + 1, 38))
 
     def volume_down(self):
         """Volume down media player."""
         if self._volume is None:
             return
-        self._xantech.set_volume(self._zone_id, max(self._volume - 1, 0))
+        self._amp.set_volume(self._zone_id, max(self._volume - 1, 0))
