@@ -1,4 +1,4 @@
-"""Support for interfacing with Xantech 6 zone home audio controller."""
+"""Support for interfacing with multi-zone matrix audio controllers (Monoprice, Xantech, Dayton Audio)."""
 import logging
 
 from pyxantech import get_amp_controller
@@ -40,10 +40,13 @@ ZONE_SCHEMA = vol.Schema({vol.Required(CONF_NAME): cv.string})
 
 SOURCE_SCHEMA = vol.Schema({vol.Required(CONF_NAME): cv.string})
 
-CONF_ZONES = "zones"
+CONF_TYPE = "type"
 CONF_SOURCES = "sources"
+CONF_ZONES = "zones"
 
 DATA_XANTECH = "xantech"
+
+AMP_TYPES = [ "monoprice6", "xantech8" ]
 
 # Valid zone ids: 11-16 or 21-26 or 31-36
 ZONE_IDS = vol.All(
@@ -60,6 +63,7 @@ MEDIA_PLAYER_SCHEMA = vol.Schema({ATTR_ENTITY_ID: cv.comp_entity_ids})
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
+        vol.Optional(CONF_TYPE, default="monoprice6"): vol.In(AMP_TYPES),
         vol.Required(CONF_PORT): cv.string,
         vol.Required(CONF_ZONES): vol.Schema({ZONE_IDS: ZONE_SCHEMA}),
         vol.Required(CONF_SOURCES): vol.Schema({SOURCE_IDS: SOURCE_SCHEMA}),
@@ -70,11 +74,12 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
 def setup_platform(hass, config, add_entities, discovery_info=None):
     """Set up the Xantech 8-zone amplifier platform."""
     port = config.get(CONF_PORT)
+    protocol = config.get(CONF_PROTOCOL)
 
     try:
-        xantech = get_amp_controller('xantech8', port)
+        amp = get_amp_controller(protocol, port)
     except SerialException:
-        _LOGGER.error("Error connecting to Xantech controller")
+        _LOGGER.error("Error connecting to '%s' amplifier using %s", protocol, port)
         return
 
     sources = {
@@ -85,7 +90,7 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
     for zone_id, extra in config[CONF_ZONES].items():
         _LOGGER.info("Adding zone %d - %s", zone_id, extra[CONF_NAME])
         hass.data[DATA_XANTECH].append(
-            XantechZone(xantech, sources, zone_id, extra[CONF_NAME])
+            AmpZone(xantech, sources, zone_id, extra[CONF_NAME])
         )
 
     add_entities(hass.data[DATA_XANTECH], True)
@@ -118,7 +123,7 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
     )
 
 
-class XantechZone(MediaPlayerDevice):
+class AmpZone(MediaPlayerDevice):
     """Representation of a Xantech amplifier zone."""
 
     def __init__(self, xantech, sources, zone_id, zone_name):

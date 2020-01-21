@@ -13,6 +13,7 @@ https://www.home-assistant.io/integrations/monoprice/
 # Example configuration.yaml entry
 media_player:
   - platform: xantech
+    type: xantech8
     port: /dev/ttyUSB0
     zones:
       11:
