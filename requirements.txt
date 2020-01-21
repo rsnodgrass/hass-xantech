@@ -1,1 +1,1 @@
-pyxantech>=0.3.1
+pyxantech>=0.3.2

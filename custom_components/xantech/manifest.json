@@ -2,7 +2,7 @@
   "domain": "xantech",
   "name": "Xantech 8-Zone Amplifier",
   "documentation": "https://www.home-assistant.io/integrations/xantech",
-  "requirements": ["pyxantech==0.3.1"],
+  "requirements": ["pyxantech==0.3.2"],
   "dependencies": [],
   "codeowners": ["@rsnodgrass"]
 }
