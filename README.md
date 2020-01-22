@@ -1,8 +1,9 @@
 # Xantech Amp Controller for Home Assistant
 
-NOTE: This is a fork of the Home Assistant monoprice controller. Ideally the goal
-is to merge this back together with an amp controller that works for both since
-they use almost the same protocol.
+NOTE: This is a fork of the Home Assistant `monoprice` controller and ideally should
+be merged back into Home Assistant once the underlying library is merged back
+together. The Monoprice amps use the same protocol that Xantech originally developed
+in late 1990s.
 
 Install [HACS](https://hacs.xyz/), add this repository 'rsnodgrass/hass-xantech', and configure like the monoprice component here:
 https://www.home-assistant.io/integrations/monoprice/
