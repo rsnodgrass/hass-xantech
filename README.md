@@ -1,4 +1,4 @@
-# Xantech Amp Controller for Home Assistant
+# Monoprice & Xantech Multi-Zone Amplifier Control for Home Assistant
 
 NOTE: This is a fork of the Home Assistant `monoprice` controller and ideally should
 be merged back into Home Assistant once the underlying library is merged back
