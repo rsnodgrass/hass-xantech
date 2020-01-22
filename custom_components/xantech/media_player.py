@@ -27,7 +27,7 @@ from .const import DOMAIN, SERVICE_RESTORE, SERVICE_SNAPSHOT
 
 _LOGGER = logging.getLogger(__name__)
 
-SUPPORT_XANTECH = (
+SUPPORTED_AMP_FEATURES = (
     SUPPORT_VOLUME_MUTE
     | SUPPORT_VOLUME_SET
     | SUPPORT_VOLUME_STEP
@@ -125,7 +125,7 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
 
 
 class AmpZone(MediaPlayerDevice):
-    """Representation of a Xantech amplifier zone."""
+    """Representation of a matrix amplifier zone."""
 
     def __init__(self, amp, sources, zone_id, zone_name):
         """Initialize new zone."""
@@ -187,7 +187,7 @@ class AmpZone(MediaPlayerDevice):
     @property
     def supported_features(self):
         """Return flag of media commands that are supported."""
-        return SUPPORT_XANTECH
+        return SUPPORTED_AMP_FEATURES
 
     @property
     def media_title(self):
