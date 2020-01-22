@@ -48,18 +48,22 @@ DATA_MATRIX_AMPS = "matrix_amps"
 
 AMP_TYPES = [ "monoprice6", "xantech8" ]
 
-# Valid zone ids: 11-16 or 21-26 or 31-36
+# Valid zone ids: 
+#   monoprice6: 11-16 or 21-26 or 31-36 (Monoprice and Dayton Audio)
+#   xantech8:   11-18 or 21-28 or 31-38
 ZONE_IDS = vol.All(
     vol.Coerce(int),
     vol.Any(
-        # FIXME: make configurable max zones (monoprice 6, xantech 8)
-        vol.Range(min=11, max=18), vol.Range(min=21, max=28), vol.Range(min=31, max=38) # XANTECH
+        vol.Range(min=11, max=18),
+        vol.Range(min=21, max=28),
+        vol.Range(min=31, max=38)
     ),
 )
 
-# Valid source ids: 1-6
-# FIXME: make configurable max zones (monoprice 6, xantech 8)
-SOURCE_IDS = vol.All(vol.Coerce(int), vol.Range(min=1, max=8)) # XANTECH
+# Valid source ids: 
+#    monoprice6: 1-6 (Monoprice and Dayton Audio)
+#    xantech8:   1-8
+SOURCE_IDS = vol.All(vol.Coerce(int), vol.Range(min=1, max=8))
 
 MEDIA_PLAYER_SCHEMA = vol.Schema({ATTR_ENTITY_ID: cv.comp_entity_ids})
 
@@ -71,6 +75,8 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
         vol.Required(CONF_SOURCES): vol.Schema({SOURCE_IDS: SOURCE_SCHEMA}),
     }
 )
+
+MAX_VOLUME = 38
 
 def setup_platform(hass, config, add_entities, discovery_info=None):
     """Set up the Xantech 8-zone amplifier platform."""
@@ -235,13 +241,13 @@ class AmpZone(MediaPlayerDevice):
 
     def set_volume_level(self, volume):
         """Set volume level, range 0..1."""
-        self._amp.set_volume(self._zone_id, int(volume * 38))
+        self._amp.set_volume(self._zone_id, int(volume * MAX_VOLUME))
 
     def volume_up(self):
         """Volume up the media player."""
         if self._volume is None:
             return
-        self._amp.set_volume(self._zone_id, min(self._volume + 1, 38))
+        self._amp.set_volume(self._zone_id, min(self._volume + 1, MAX_VOLUME))
 
     def volume_down(self):
         """Volume down media player."""
