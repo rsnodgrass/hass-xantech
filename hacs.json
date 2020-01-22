@@ -1,5 +1,5 @@
 {
-  "name": "Xantech Amplifier Control",
+  "name": "Monoprice & Xantech Mult-Zone Amplifier Control",
   "domains": ["media_player"],
   "render_readme": true
 }
