@@ -1,7 +1,8 @@
-"""Support for interfacing with multi-zone matrix audio controllers (Monoprice, Xantech, Dayton Audio)."""
+"""Home Assistant Media Player for Xantech, Monoprice and Dayton Audio multi-zone amplifiers""" 
+
 import logging
 
-from pyxantech import get_amp_controller
+from pyxantech import get_amp_controller, SUPPORTED_AMP_TYPES
 from serial import SerialException
 import voluptuous as vol
 
@@ -40,17 +41,16 @@ CONF_TYPE = "type"
 CONF_SOURCES = "sources"
 CONF_ZONES = "zones"
 
-DATA_MATRIX_AMPS = "matrix_amps"
+DATA_AMP_GLOBAL = "xantech_monoprice"
 
-AMP_TYPES = [ "monoprice6", "xantech8" ]
-
-# TODO: this should come from config for each model...from underlying pymonoprice
+# TODO: this should come from config for each model...from underlying pyxantech
 # Valid zone ids: 
 #   monoprice6: 11-16 or 21-26 or 31-36 (Monoprice and Dayton Audio)
-#   xantech8:   11-18 or 21-28 or 31-38
+#   xantech8:   11-18 or 21-28 or 31-38 or 1-8
 ZONE_IDS = vol.All(
     vol.Coerce(int),
     vol.Any(
+        vol.Range(min=1, max=8),
         vol.Range(min=11, max=18),
         vol.Range(min=21, max=28),
         vol.Range(min=31, max=38)
@@ -68,7 +68,7 @@ MEDIA_PLAYER_SCHEMA = vol.Schema({ATTR_ENTITY_ID: cv.comp_entity_ids})
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
-        vol.Optional(CONF_TYPE, default="monoprice6"): vol.In(AMP_TYPES),
+        vol.Optional(CONF_TYPE, default="xantech8"): vol.In(SUPPORTED_AMP_TYPES),
         vol.Required(CONF_PORT): cv.string,
         vol.Required(CONF_ZONES): vol.Schema({ZONE_IDS: ZONE_SCHEMA}),        # FIXME: can we default?
         vol.Required(CONF_SOURCES): vol.Schema({SOURCE_IDS: SOURCE_SCHEMA}),  # FIXME: can we default?
@@ -92,14 +92,14 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
         source_id: extra[CONF_NAME] for source_id, extra in config[CONF_SOURCES].items()
     }
 
-    hass.data[DATA_MATRIX_AMPS] = []
+    hass.data[DATA_AMP_GLOBAL] = []
     for zone_id, extra in config[CONF_ZONES].items():
         _LOGGER.info("Adding %s zone %d - %s", amp_type, zone_id, extra[CONF_NAME])
-        hass.data[DATA_MATRIX_AMPS].append(
+        hass.data[DATA_AMP_GLOBAL].append(
             AmpZone(amp, sources, zone_id, extra[CONF_NAME])
         )
 
-    add_entities(hass.data[DATA_MATRIX_AMPS], True)
+    add_entities(hass.data[DATA_AMP_GLOBAL], True)
 
     def service_handle(service):
         """Handle for services."""
@@ -108,11 +108,11 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
         if entity_ids:
             devices = [
                 device
-                for device in hass.data[DATA_MATRIX_AMPS]
+                for device in hass.data[DATA_AMP_GLOBAL]
                 if device.entity_id in entity_ids
             ]
         else:
-            devices = hass.data[DATA_MATRIX_AMPS]
+            devices = hass.data[DATA_AMP_GLOBAL]
 
         for device in devices:
             if service.service == SERVICE_SNAPSHOT:

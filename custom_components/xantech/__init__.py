@@ -1,1 +1,1 @@
-"""The xantech component."""
+"""Xantech Amplifier for Home Assistant"""
