@@ -1,8 +1,8 @@
 {
   "domain": "xantech",
-  "name": "Multi-Zone Matrix Amplifier (Monoprice, Xantech)",
-  "documentation": "https://www.home-assistant.io/integrations/xantech",
-  "requirements": ["pyxantech==0.3.5"],
+  "name": "Xantech Multi-Zone Amplifier",
+  "documentation": "https://github.com/rsnodgrass/hass-xantech",
+  "requirements": ["pyxantech==0.4.0"],
   "dependencies": [],
   "codeowners": ["@rsnodgrass"]
 }

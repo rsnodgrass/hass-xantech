@@ -36,10 +36,6 @@ SUPPORTED_AMP_FEATURES = (
     | SUPPORT_SELECT_SOURCE
 )
 
-ZONE_SCHEMA = vol.Schema({vol.Required(CONF_NAME): cv.string})
-
-SOURCE_SCHEMA = vol.Schema({vol.Required(CONF_NAME): cv.string})
-
 CONF_TYPE = "type"
 CONF_SOURCES = "sources"
 CONF_ZONES = "zones"
@@ -48,6 +44,7 @@ DATA_MATRIX_AMPS = "matrix_amps"
 
 AMP_TYPES = [ "monoprice6", "xantech8" ]
 
+# TODO: this should come from config for each model...from underlying pymonoprice
 # Valid zone ids: 
 #   monoprice6: 11-16 or 21-26 or 31-36 (Monoprice and Dayton Audio)
 #   xantech8:   11-18 or 21-28 or 31-38
@@ -59,11 +56,13 @@ ZONE_IDS = vol.All(
         vol.Range(min=31, max=38)
     ),
 )
+ZONE_SCHEMA = vol.Schema({vol.Required(CONF_ZONES): cv.string})
 
 # Valid source ids: 
 #    monoprice6: 1-6 (Monoprice and Dayton Audio)
 #    xantech8:   1-8
 SOURCE_IDS = vol.All(vol.Coerce(int), vol.Range(min=1, max=8))
+SOURCE_SCHEMA = vol.Schema({vol.Required(CONF_SOURCES): cv.string})
 
 MEDIA_PLAYER_SCHEMA = vol.Schema({ATTR_ENTITY_ID: cv.comp_entity_ids})
 
@@ -71,8 +70,8 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
         vol.Optional(CONF_TYPE, default="monoprice6"): vol.In(AMP_TYPES),
         vol.Required(CONF_PORT): cv.string,
-        vol.Required(CONF_ZONES): vol.Schema({ZONE_IDS: ZONE_SCHEMA}),
-        vol.Required(CONF_SOURCES): vol.Schema({SOURCE_IDS: SOURCE_SCHEMA}),
+        vol.Required(CONF_ZONES): vol.Schema({ZONE_IDS: ZONE_SCHEMA}),        # FIXME: can we default?
+        vol.Required(CONF_SOURCES): vol.Schema({SOURCE_IDS: SOURCE_SCHEMA}),  # FIXME: can we default?
     }
 )
 
