@@ -29,13 +29,11 @@ media_player:
     zones:
       11:
         name: "Main Bedroom"
-	default_source: 5
+        default_source: 5
       12:
         name: "Living Room"
-	default_source: 1
       13:
         name: "Kitchen"
-	default_source: 1
     sources:
       1:
         name: "Sonos"
