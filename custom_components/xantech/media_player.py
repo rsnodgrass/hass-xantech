@@ -2,9 +2,9 @@
 
 import logging
 
-from pyxantech import get_amp_controller, SUPPORTED_AMP_TYPES
-from serial import SerialException
 import voluptuous as vol
+from serial import SerialException
+from pyxantech import get_amp_controller, SUPPORTED_AMP_TYPES
 
 from homeassistant.components.media_player import PLATFORM_SCHEMA, MediaPlayerDevice
 from homeassistant.components.media_player.const import (
@@ -19,6 +19,7 @@ from homeassistant.const import (
     ATTR_ENTITY_ID,
     CONF_NAME,
     CONF_PORT,
+    CONF_TYPE,
     STATE_OFF,
     STATE_ON,
 )
@@ -26,7 +27,9 @@ import homeassistant.helpers.config_validation as cv
 
 from .const import DOMAIN, SERVICE_RESTORE, SERVICE_SNAPSHOT
 
-_LOGGER = logging.getLogger(__name__)
+LOG = logging.getLogger(__name__)
+
+DATA_AMP_GLOBAL = "xantech_monoprice"
 
 SUPPORTED_AMP_FEATURES = (
     SUPPORT_VOLUME_MUTE
@@ -37,12 +40,9 @@ SUPPORTED_AMP_FEATURES = (
     | SUPPORT_SELECT_SOURCE
 )
 
-CONF_TYPE = "type"
 CONF_SOURCES = "sources"
 CONF_ZONES = "zones"
 CONF_DEFAULT_SOURCE = "default_source"
-
-DATA_AMP_GLOBAL = "xantech_monoprice"
 
 # Valid source ids: 
 #    monoprice6: 1-6 (Monoprice and Dayton Audio)
@@ -53,6 +53,7 @@ SOURCE_SCHEMA = vol.Schema({
 )
 
 # TODO: this should come from config for each model...from underlying pyxantech
+#
 # Valid zone ids: 
 #   monoprice6: 11-16 or 21-26 or 31-36 (Monoprice and Dayton Audio)
 #   xantech8:   11-18 or 21-28 or 31-38 or 1-8
@@ -70,6 +71,7 @@ ZONE_SCHEMA = vol.Schema({
     vol.Optional(CONF_DEFAULT_SOURCE): vol.In(SOURCE_IDS)
 })
 
+# FIXME: is this actually necessary?
 MEDIA_PLAYER_SCHEMA = vol.Schema({ATTR_ENTITY_ID: cv.comp_entity_ids})
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
@@ -91,7 +93,7 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
     try:
         amp = get_amp_controller(amp_type, port)
     except SerialException:
-        _LOGGER.error("Error connecting to '%s' amplifier using %s", amp_type, port)
+        LOG.error("Error connecting to '%s' amplifier using %s", amp_type, port)
         return
 
     sources = {
@@ -100,7 +102,7 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
 
     hass.data[DATA_AMP_GLOBAL] = []
     for zone_id, extra in config[CONF_ZONES].items():
-        _LOGGER.info("Adding %s zone %d - %s", amp_type, zone_id, extra[CONF_NAME])
+        LOG.info("Adding %s zone %d - %s", amp_type, zone_id, extra[CONF_NAME])
         hass.data[DATA_AMP_GLOBAL].append(
             AmpZone(amp, sources, zone_id, extra[CONF_NAME])
         )
