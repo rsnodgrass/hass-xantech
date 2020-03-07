@@ -4,7 +4,7 @@ import logging
 
 import voluptuous as vol
 from serial import SerialException
-from pyxantech import get_amp_controller, SUPPORTED_AMP_TYPES
+from pyxantech import get_amp_controller, SUPPORTED_AMP_TYPES, BAUD_RATES
 
 from homeassistant.components.media_player import PLATFORM_SCHEMA, MediaPlayerDevice
 from homeassistant.components.media_player.const import (
@@ -43,6 +43,7 @@ SUPPORTED_AMP_FEATURES = (
 CONF_SOURCES = "sources"
 CONF_ZONES = "zones"
 CONF_DEFAULT_SOURCE = "default_source"
+CONF_BAUDRATE = "baudrate"
 
 # Valid source ids: 
 #    monoprice6: 1-6 (Monoprice and Dayton Audio)
@@ -71,7 +72,7 @@ ZONE_SCHEMA = vol.Schema({
     vol.Optional(CONF_DEFAULT_SOURCE): vol.In(SOURCE_IDS)
 })
 
-# FIXME: is this actually necessary?
+# FIXME: is this necessary?
 MEDIA_PLAYER_SCHEMA = vol.Schema({ATTR_ENTITY_ID: cv.comp_entity_ids})
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
@@ -80,6 +81,7 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
         vol.Required(CONF_PORT): cv.string,
         vol.Required(CONF_ZONES): vol.Schema({ZONE_IDS: ZONE_SCHEMA}),
         vol.Required(CONF_SOURCES): vol.Schema({SOURCE_IDS: SOURCE_SCHEMA}),
+        vol.Optional(CONF_BAUDRATE, default=9600): vol.In(BAUD_RATES)
     }
 )
 
@@ -91,7 +93,12 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
     amp_type = config.get(CONF_TYPE)
 
     try:
-        amp = get_amp_controller(amp_type, port)
+        serial_config = {
+            'rs232': {
+                'baudrate': config.get(CONF_BAUDRATE)
+            }
+        }
+        amp = get_amp_controller(amp_type, port, serial_config)
     except SerialException:
         LOG.error("Error connecting to '%s' amplifier using %s", amp_type, port)
         return
