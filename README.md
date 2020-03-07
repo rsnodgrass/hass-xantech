@@ -1,4 +1,4 @@
-# Monoprice & Xantech Multi-Zone Amplifier Control for Home Assistant
+# Xantech + Monoprice Multi-Zone Amplifier Control for Home Assistant
 
 ***NOTE: THIS IS NOT WORKING YET***
 
