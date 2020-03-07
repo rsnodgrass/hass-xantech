@@ -1,11 +1,10 @@
-# Xantech + Monoprice Multi-Zone Amplifier Control for Home Assistant
+# Xantech Multi-Zone Amplifier Control for Home Assistant
 
 ***NOTE: THIS IS NOT WORKING YET***
 
-NOTE: This is a fork of the Home Assistant `monoprice` controller and ideally should
-be merged back into Home Assistant once the underlying library is merged back
-together. The Monoprice amps use the same protocol that Xantech originally developed
-in late 1990s.
+NOTE: This is a fork of the Home Assistant `monoprice` controller and ideally should be merged back into Home Assistant once the underlying library is merged back together. The Monoprice amps use the same protocol that Xantech originally developed in late 1990s.
+
+NOTE: This *MAY* work with Monoprice if you specific the `monoprice6` config type, but `pyxantech` has not been able to be tested with a physical amplifier.
 
 ## Installation
 
