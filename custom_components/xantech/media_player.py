@@ -40,8 +40,15 @@ SUPPORTED_AMP_FEATURES = (
 CONF_TYPE = "type"
 CONF_SOURCES = "sources"
 CONF_ZONES = "zones"
+CONF_DEFAULT_SOURCE = "default_source"
 
 DATA_AMP_GLOBAL = "xantech_monoprice"
+
+# Valid source ids: 
+#    monoprice6: 1-6 (Monoprice and Dayton Audio)
+#    xantech8:   1-8
+SOURCE_IDS = vol.All(vol.Coerce(int), vol.Range(min=1, max=8))
+SOURCE_SCHEMA = vol.Schema({vol.Required(CONF_SOURCES): cv.string})
 
 # TODO: this should come from config for each model...from underlying pyxantech
 # Valid zone ids: 
@@ -56,13 +63,10 @@ ZONE_IDS = vol.All(
         vol.Range(min=31, max=38)
     ),
 )
-ZONE_SCHEMA = vol.Schema({vol.Required(CONF_ZONES): cv.string})
-
-# Valid source ids: 
-#    monoprice6: 1-6 (Monoprice and Dayton Audio)
-#    xantech8:   1-8
-SOURCE_IDS = vol.All(vol.Coerce(int), vol.Range(min=1, max=8))
-SOURCE_SCHEMA = vol.Schema({vol.Required(CONF_SOURCES): cv.string})
+ZONE_SCHEMA = vol.Schema({
+    vol.Required(CONF_NAME, default="Audio Zone"): cv.string,
+    vol.Optional(CONF_DEFAULT_SOURCE): vol.In(SOURCE_IDS)
+})
 
 MEDIA_PLAYER_SCHEMA = vol.Schema({ATTR_ENTITY_ID: cv.comp_entity_ids})
 
