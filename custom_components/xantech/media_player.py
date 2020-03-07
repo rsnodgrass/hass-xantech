@@ -48,7 +48,9 @@ DATA_AMP_GLOBAL = "xantech_monoprice"
 #    monoprice6: 1-6 (Monoprice and Dayton Audio)
 #    xantech8:   1-8
 SOURCE_IDS = vol.All(vol.Coerce(int), vol.Range(min=1, max=8))
-SOURCE_SCHEMA = vol.Schema({vol.Required(CONF_SOURCES): cv.string})
+SOURCE_SCHEMA = vol.Schema({
+    vol.Required(CONF_NAME, default="Unknown"): cv.string}
+)
 
 # TODO: this should come from config for each model...from underlying pyxantech
 # Valid zone ids: 
@@ -74,8 +76,8 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
         vol.Optional(CONF_TYPE, default="xantech8"): vol.In(SUPPORTED_AMP_TYPES),
         vol.Required(CONF_PORT): cv.string,
-        vol.Required(CONF_ZONES): vol.Schema({ZONE_IDS: ZONE_SCHEMA}),        # FIXME: can we default?
-        vol.Required(CONF_SOURCES): vol.Schema({SOURCE_IDS: SOURCE_SCHEMA}),  # FIXME: can we default?
+        vol.Required(CONF_ZONES): vol.Schema({ZONE_IDS: ZONE_SCHEMA}),
+        vol.Required(CONF_SOURCES): vol.Schema({SOURCE_IDS: SOURCE_SCHEMA}),
     }
 )
 
