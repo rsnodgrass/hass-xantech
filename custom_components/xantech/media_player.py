@@ -49,7 +49,7 @@ CONF_DEFAULT_SOURCE = "default_source"
 #    xantech8:   1-8
 SOURCE_IDS = vol.All(vol.Coerce(int), vol.Range(min=1, max=8))
 SOURCE_SCHEMA = vol.Schema({
-    vol.Required(CONF_NAME, default="Unknown"): cv.string}
+    vol.Required(CONF_NAME, default="Unknown Source"): cv.string}
 )
 
 # TODO: this should come from config for each model...from underlying pyxantech
