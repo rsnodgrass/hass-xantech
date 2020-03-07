@@ -45,7 +45,51 @@ media_player:
 
 #### Lovelace
 
+Example of multiple room volume/power control with a single Spotify source for the entire house (credit: kcarter13).
+
+![xantech_example_from_kcarter13](https://community-home-assistant-assets.s3.dualstack.us-west-2.amazonaws.com/original/3X/0/0/00da61ea4238f9891cf360210f3bac7a4b867c0f.png)
+
 ```yaml
+entities:
+  - artwork: cover
+    entity: media_player.spotify
+    group: true
+    hide:
+      power: true
+      volume: false
+    shortcuts:
+      columns: 4
+      buttons:
+        - name: Country Mix
+          type: playlist
+          id: 'spotify:user:spotify:playlist:37i9dQZF1DX1lVhptIYRda'
+        - name: Classic Rock
+          type: playlist
+          id: 'spotify:user:spotify:playlist:37i9dQZF1DWXRqgorJj26U'
+    info: short
+    source: icon
+    type: 'custom:mini-media-player'
+  - entity: media_player.back_porch
+    group: true
+    hide:
+      controls: true
+    type: 'custom:mini-media-player'
+  - entity: media_player.office
+    group: true
+    hide:
+      controls: true
+    type: 'custom:mini-media-player'
+  - entity: media_player.garage
+    group: true
+    hide:
+      controls: true
+    type: 'custom:mini-media-player'
+  - entity: media_player.kitchen_speaker
+    group: true
+    hide:
+      controls: true
+    type: 'custom:mini-media-player'
+type: entities
 ```
 
 ## See Also
