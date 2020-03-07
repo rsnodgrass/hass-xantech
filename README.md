@@ -10,19 +10,23 @@ https://www.home-assistant.io/integrations/monoprice/
 
 **except with `xantech` as the platform**
 
+#### Example configuration.yaml:
+
 ```yaml
-# Example configuration.yaml entry
 media_player:
   - platform: xantech
     type: xantech8
     port: /dev/ttyUSB0
     zones:
       11:
-        name: Main Bedroom
+        name: "Main Bedroom"
+	default_source: 5
       12:
-        name: Living Room
+        name: "Living Room"
+	default_source: 1
       13:
-        name: Kitchen
+        name: "Kitchen"
+	default_source: 1
     sources:
       1:
         name: Sonos
