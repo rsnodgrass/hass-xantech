@@ -45,7 +45,7 @@ media_player:
 
 #### Lovelace
 
-Example of multiple room volume/power control with a single Spotify source for the entire house (credit: kcarter13).
+Example of multiple room volume/power control with a single Spotify source for the entire house (credit: [kcarter13](https://community.home-assistant.io/u/kcarter13/)).
 
 ![xantech_example_from_kcarter13](https://community-home-assistant-assets.s3.dualstack.us-west-2.amazonaws.com/original/3X/0/0/00da61ea4238f9891cf360210f3bac7a4b867c0f.png)
 
