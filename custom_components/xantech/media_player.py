@@ -170,7 +170,7 @@ class AmpZone(MediaPlayerDevice):
 
         # FIXME: check that status has the required fields before replacing existing
 
-        LOG.debug(f"Received zone {self._zone_id} status update {status}")
+        LOG.debug(f"{self._name} zone {self._zone_id} status update: {status}")
         self._status = status
 
         source_id = status['source']
@@ -263,7 +263,7 @@ class AmpZone(MediaPlayerDevice):
     def set_volume_level(self, volume):
         """Set volume level, range 0..1."""
         amp_volume = int(volume / MAX_VOLUME)
-        LOG.warning("Would have set {self._name} zone {self._zone_id} volume to {amp_volume} (HA volume {volume}")
+        LOG.warning(f"Would have set {self._name} zone {self._zone_id} volume to {amp_volume} (HA volume {volume}")
         # self._amp.set_volume(self._zone_id, amp_volume)
         # FIXME
 
