@@ -70,7 +70,7 @@ ZONE_IDS = vol.All(
 ZONE_SCHEMA = vol.Schema({
     vol.Required(CONF_NAME, default="Audio Zone"): cv.string,
 #    vol.Optional(CONF_DEFAULT_SOURCE): vol.In(SOURCE_IDS)
-#    vol.Optional(CONF_DEFAULT_SOURCE): cv.string
+    vol.Optional(CONF_DEFAULT_SOURCE): cv.positive_int
 })
 
 # FIXME: is this necessary?
