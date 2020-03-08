@@ -172,6 +172,7 @@ class AmpZone(MediaPlayerDevice):
         state = self._amp.zone_status(self._zone_id)
         if not state:
             return False
+        LOG.debug(f"Received zone {self._zone_id} status {state}")
         self._state = STATE_ON if state.power else STATE_OFF
         self._volume = state.volume
         self._mute = state.mute
