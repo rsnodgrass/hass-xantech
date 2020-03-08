@@ -1,6 +1,9 @@
 # Xantech Multi-Zone Amplifier Control for Home Assistant
 
-***NOTE: THIS IS NOT WORKING YET***
+![beta_badge](https://img.shields.io/badge/maturity-Beta-yellow.png)
+![release_badge](https://img.shields.io/github/v/release/rsnodgrass/hass-xantech.svg)
+![release_date](https://img.shields.io/github/release-date/rsnodgrass/hass-xantech.svg)
+[![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg)](https://github.com/custom-components/hacs)
 
 NOTE: This is a fork of the Home Assistant `monoprice` controller and ideally should be merged back into Home Assistant once the underlying library is merged back together. The Monoprice amps use the same protocol that Xantech originally developed in late 1990s.
 
