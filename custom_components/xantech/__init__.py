@@ -1,1 +1,3 @@
-"""Xantech Amplifier for Home Assistant"""
+"""
+Xantech Multi-Zone Amplifier Control for Home Assistant
+"""
