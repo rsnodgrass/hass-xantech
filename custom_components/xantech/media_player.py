@@ -201,7 +201,7 @@ class AmpZone(MediaPlayerDevice):
         volume = self._status['volume']
         if volume is None:
             return None
-        return volume / 38.0
+        return volume / MAX_VOLUME
 
     @property
     def is_volume_muted(self):
@@ -278,4 +278,4 @@ class AmpZone(MediaPlayerDevice):
             return
 
         # reminder the volume is on the amplifier scale (0-38), not Home Assistants (1-100)
-        self._amp.set_volume(self._zone_id, max(self._volume - 1, 0))
+        self._amp.set_volume(self._zone_id, max(volume - 1, 0))
