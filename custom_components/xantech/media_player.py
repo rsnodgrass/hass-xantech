@@ -133,13 +133,9 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
             elif service.service == SERVICE_RESTORE:
                 device.restore()
 
-    hass.services.register(
-        DOMAIN, SERVICE_SNAPSHOT, service_handle, schema=MEDIA_PLAYER_SCHEMA
-    )
-
-    hass.services.register(
-        DOMAIN, SERVICE_RESTORE, service_handle, schema=MEDIA_PLAYER_SCHEMA
-    )
+    # register the save/restore snapshot service APIs
+    hass.services.register(DOMAIN, SERVICE_SNAPSHOT, service_handle, schema=MEDIA_PLAYER_SCHEMA)
+    hass.services.register(DOMAIN, SERVICE_RESTORE, service_handle, schema=MEDIA_PLAYER_SCHEMA)
 
 
 class AmpZone(MediaPlayerDevice):
@@ -177,9 +173,9 @@ class AmpZone(MediaPlayerDevice):
         LOG.debug(f"Received zone {self._zone_id} status update {status}")
         self._status = status
 
-        idx = status['source']
-        if idx in self._source_id_to_name:
-            self._source = self._source_id_to_name[idx]
+        source_id = status['source']
+        if source_id in self._source_id_to_name:
+            self._source = self._source_id_to_name[source_id]
         else:
             self._source = None
 
