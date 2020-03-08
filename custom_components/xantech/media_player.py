@@ -95,9 +95,7 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
 
     try:
         serial_config = {
-            'rs232': {
-                'baudrate': config.get(CONF_BAUDRATE)
-            }
+            'rs232': { 'baudrate': config.get(CONF_BAUDRATE) }
         }
         amp = get_amp_controller(amp_type, port, serial_config)
     except SerialException:
@@ -111,9 +109,8 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
     hass.data[DATA_AMP_GLOBAL] = []
     for zone_id, extra in config[CONF_ZONES].items():
         LOG.info("Adding %s zone %d - %s", amp_type, zone_id, extra[CONF_NAME])
-        hass.data[DATA_AMP_GLOBAL].append(
-            AmpZone(amp, sources, zone_id, extra[CONF_NAME])
-        )
+        amp_zone = AmpZone(amp, sources, zone_id, extra[CONF_NAME])
+        hass.data[DATA_AMP_GLOBAL].append(amp_zone)
 
     add_entities(hass.data[DATA_AMP_GLOBAL], True)
 
