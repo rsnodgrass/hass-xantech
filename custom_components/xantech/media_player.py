@@ -161,26 +161,28 @@ class AmpZone(MediaPlayerDevice):
         self._zone_id = zone_id
         self._name = zone_name
 
+        self._status = None
+
         self._snapshot = None
-        self._state = None
-        self._volume = None
         self._source = None
-        self._mute = None
 
     def update(self):
         """Retrieve latest state."""
-        state = self._amp.zone_status(self._zone_id)
-        if not state:
+        status = self._amp.zone_status(self._zone_id)
+        if not status:
             return False
-        LOG.debug(f"Received zone {self._zone_id} status {state}")
-        self._state = STATE_ON if state.power else STATE_OFF
-        self._volume = state.volume
-        self._mute = state.mute
-        idx = state.source
+
+        # FIXME: check that status has the required fields before replacing existing
+
+        LOG.debug(f"Received zone {self._zone_id} status update {status}")
+        self._status = status
+
+        idx = status['source']
         if idx in self._source_id_name:
             self._source = self._source_id_name[idx]
         else:
             self._source = None
+
         return True
 
     @property
@@ -190,20 +192,22 @@ class AmpZone(MediaPlayerDevice):
 
     @property
     def state(self):
-        """Return the state of the zone."""
-        return self._state
+        """Return the powered on state of the zone."""
+        return self._status['power']
 
     @property
     def volume_level(self):
         """Volume level of the media player (0..1)."""
-        if self._volume is None:
+        volume = self._status['volume']
+        if volume is None:
             return None
-        return self._volume / 38.0
+        return volume / 38.0
 
     @property
     def is_volume_muted(self):
         """Boolean if volume is currently muted."""
-        return self._mute
+        # FIXME: what about when volume == 0?
+        return self._status['mute']
 
     @property
     def supported_features(self):
@@ -260,12 +264,18 @@ class AmpZone(MediaPlayerDevice):
 
     def volume_up(self):
         """Volume up the media player."""
-        if self._volume is None:
+        volume = self._status['volume']
+        if volume is None:
             return
-        self._amp.set_volume(self._zone_id, min(self._volume + 1, MAX_VOLUME))
+
+        # reminder the volume is on the amplifier scale (0-38), not Home Assistants (1-100)
+        self._amp.set_volume(self._zone_id, min(volume + 1, MAX_VOLUME))
 
     def volume_down(self):
         """Volume down media player."""
-        if self._volume is None:
+        volume = self._status['volume']
+        if volume is None:
             return
+
+        # reminder the volume is on the amplifier scale (0-38), not Home Assistants (1-100)
         self._amp.set_volume(self._zone_id, max(self._volume - 1, 0))
