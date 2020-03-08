@@ -194,7 +194,8 @@ class AmpZone(MediaPlayerDevice):
     @property
     def state(self):
         """Return the powered on state of the zone."""
-        return self._status['power']
+        power = self._status['power']
+        return power is not None and self._status['power'] == True
 
     @property
     def volume_level(self):
