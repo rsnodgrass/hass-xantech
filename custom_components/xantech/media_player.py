@@ -151,21 +151,23 @@ class AmpZone(MediaPlayerDevice):
     def __init__(self, amp, sources, zone_id, zone_name):
         """Initialize new zone."""
         self._amp = amp
-        # dict source_id -> source name
-        self._source_id_name = sources
-        # dict source name -> source_id
-        self._source_name_id = {v: k for k, v in sources.items()}
-        # ordered list of all source names
-        self._source_names = sorted(
-            self._source_name_id.keys(), key=lambda v: self._source_name_id[v]
-        )
-        self._zone_id = zone_id
+        self._zone_id = zone_id        
         self._name = zone_name
 
         self._status = None
+        self._status_snapshot = None
 
-        self._snapshot = None
-        self._source = None
+        # dict source_id -> source name
+        self._source_id_to_name = sources
+
+        # dict source name -> source_id
+        self._source_name_to_id = {v: k for k, v in sources.items()}
+
+        # FIXME: should this be sorted, or an order specified in HA config?
+        # ordered list of all source names
+        self._source_names = sorted(
+            self._source_name_to_id.keys(), key=lambda v: self._source_name_to_id[v]
+        )
 
     def update(self):
         """Retrieve latest state."""
@@ -179,8 +181,8 @@ class AmpZone(MediaPlayerDevice):
         self._status = status
 
         idx = status['source']
-        if idx in self._source_id_name:
-            self._source = self._source_id_name[idx]
+        if idx in self._source_id_to_name:
+            self._source = self._source_id_to_name[idx]
         else:
             self._source = None
 
@@ -233,20 +235,23 @@ class AmpZone(MediaPlayerDevice):
 
     def snapshot(self):
         """Save zone's current state."""
-        self._snapshot = self._amp.zone_status(self._zone_id)
+        self._status_snapshot = self._amp.zone_status(self._zone_id)
 
     def restore(self):
         """Restore saved state."""
-        if self._snapshot:
-            self._amp.restore_zone(self._snapshot)
+        if self._status_snapshot:
+            self._amp.restore_zone(self._status_snapshot)
             self.schedule_update_ha_state(True)
 
     def select_source(self, source):
         """Set input source."""
-        if source not in self._source_name_id:
+        LOG.info(f"Selecting {source} in {self._source_name_to_id}")
+        if source not in self._source_name_to_id:
             return
-        idx = self._source_name_id[source]
-        self._amp.set_source(self._zone_id, idx)
+
+        source_id = self._source_name_to_id[source]
+        LOG.info(f"Switching zone {self._zone_id} to source {source_id} ({source})")
+        self._amp.set_source(self._zone_id, source_id)
 
     def turn_on(self):
         """Turn the media player on."""
