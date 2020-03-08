@@ -42,8 +42,8 @@ SUPPORTED_AMP_FEATURES = (
 
 CONF_SOURCES = "sources"
 CONF_ZONES = "zones"
-CONF_DEFAULT_SOURCE = "default_source"
 CONF_BAUDRATE = "baudrate"
+CONF_DEFAULT_SOURCE = "default_source"
 
 # Valid source ids: 
 #    monoprice6: 1-6 (Monoprice and Dayton Audio)
@@ -69,7 +69,8 @@ ZONE_IDS = vol.All(
 )
 ZONE_SCHEMA = vol.Schema({
     vol.Required(CONF_NAME, default="Audio Zone"): cv.string,
-    vol.Optional(CONF_DEFAULT_SOURCE): vol.In(SOURCE_IDS)
+#    vol.Optional(CONF_DEFAULT_SOURCE): vol.In(SOURCE_IDS)
+#    vol.Optional(CONF_DEFAULT_SOURCE): cv.string
 })
 
 # FIXME: is this necessary?
