@@ -261,11 +261,10 @@ class AmpZone(MediaPlayerDevice):
         self._amp.set_mute(self._zone_id, mute)
 
     def set_volume_level(self, volume):
-        """Set volume level, range 0..1."""
-        amp_volume = int(volume / MAX_VOLUME)
-        LOG.warning(f"Would have set {self._name} zone {self._zone_id} volume to {amp_volume} (HA volume {volume}")
-        # self._amp.set_volume(self._zone_id, amp_volume)
-        # FIXME
+        """Set volume level, range 0—1.0"""
+        amp_volume = int(volume * MAX_VOLUME)
+        LOG.debug(f"Setting {self._name} zone {self._zone_id} volume to {amp_volume} (HA volume {volume}")
+        self._amp.set_volume(self._zone_id, amp_volume)
 
     def volume_up(self):
         """Volume up the media player."""
