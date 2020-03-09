@@ -121,8 +121,6 @@ type: entities
 * [pyxantech](https://github.com/rsnodgrass/pyxantech)
 * [Home Assistant Monoprice integration](https://www.home-assistant.io/integrations/monoprice/)
 
-#### Community Engagement
-
 Sites with active community engagement around the Xantech, Monoprice, and Daytona Audio multi-zone amplifiers:
 
 * [Monoprice Home Assistant community discussion](https://community.home-assistant.io/t/monoprice-whole-home-audio-controller-10761-success/19734/62)
