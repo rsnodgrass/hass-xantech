@@ -238,7 +238,7 @@ class AmpZone(MediaPlayerDevice):
 
     def select_source(self, source):
         """Set input source."""
-        LOG.info(f"Selecting {source} in {self._source_name_to_id}")
+        LOG.info(f"Checking for {source} in {self._source_name_to_id}")
         if source not in self._source_name_to_id:
             return
 
