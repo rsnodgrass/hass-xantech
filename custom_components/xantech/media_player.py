@@ -283,3 +283,6 @@ class AmpZone(MediaPlayerDevice):
 
         # reminder the volume is on the amplifier scale (0-38), not Home Assistants (1-100)
         self._amp.set_volume(self._zone_id, max(volume - 1, 0))
+
+    def icon(self):
+        return 'mdi:speaker-multiple'
