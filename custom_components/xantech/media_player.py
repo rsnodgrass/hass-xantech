@@ -24,13 +24,11 @@ from homeassistant.const import (
     STATE_OFF,
     STATE_ON,
 )
-import homeassistant.helpers.config_validation as cv
+import homeassistant.helpers.config_validation as cv, entity_platform, service
 
 from .const import DOMAIN, SERVICE_RESTORE, SERVICE_SNAPSHOT
 
 LOG = logging.getLogger(__name__)
-
-DATA_MULTIZONE_AMP = "xantech_monoprice"
 
 SUPPORTED_AMP_FEATURES = (
     SUPPORT_VOLUME_MUTE
@@ -109,36 +107,36 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
     }
 
     namespace = config.get(CONF_ENTITY_NAMESPACE)
-    hass.data[DATA_MULTIZONE_AMP] = []
+    devices = []
     for zone_id, extra in config[CONF_ZONES].items():
         LOG.info("Adding %s %s zone %d - %s", namespace, amp_type, zone_id, extra[CONF_NAME])
         amp_zone = AmpZone(namespace, amp, sources, zone_id, extra[CONF_NAME])
-        hass.data[DATA_MULTIZONE_AMP].append(amp_zone)
+        devices.append(amp_zone)
 
-    add_entities(hass.data[DATA_MULTIZONE_AMP], True)
+    add_entities(devices, True)
+    
+    platform = entity_platform.current_platform.get()
 
-    def service_handle(service):
+    def _call_service(entities, service_call):
+        for entity in entities:
+            if service_call.service == SERVICE_SNAPSHOT:
+                entity.snapshot()
+            elif service_call.service == SERVICE_RESTORE:
+                entity.restore()
+
+    # @service.verify_domain_control(hass, DOMAIN)
+    def service_handle(service_call):
         """Handle for services."""
-        entity_ids = service.data.get(ATTR_ENTITY_ID)
+        entities = platform.extract_from_service(service_call)
+        if not entities:
+            return
 
-        if entity_ids:
-            devices = [
-                device
-                for device in hass.data[DATA_MULTIZONE_AMP]
-                if device.entity_id in entity_ids
-            ]
-        else:
-            devices = hass.data[DATA_MULTIZONE_AMP]
-
-        for device in devices:
-            if service.service == SERVICE_SNAPSHOT:
-                device.snapshot()
-            elif service.service == SERVICE_RESTORE:
-                device.restore()
+        # hass.async_add_executor_job(_call_service, entities, service_call)
+        _call_service(entities, service_call)
 
     # register the save/restore snapshot service APIs
-    hass.services.register(DOMAIN, SERVICE_SNAPSHOT, service_handle, schema=MEDIA_PLAYER_SCHEMA)
-    hass.services.register(DOMAIN, SERVICE_RESTORE, service_handle, schema=MEDIA_PLAYER_SCHEMA)
+    for service_call in [ SERVICE_SNAPSHOT, SERVICE_RESTORE ]:
+        hass.services.register(DOMAIN, service_call, service_handle, schema=MEDIA_PLAYER_SCHEMA)
 
 
 class AmpZone(MediaPlayerDevice):
