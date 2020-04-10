@@ -17,6 +17,7 @@ from homeassistant.components.media_player.const import (
 )
 from homeassistant.const import (
     ATTR_ENTITY_ID,
+    CONF_ENTITY_NAMESPACE,
     CONF_NAME,
     CONF_PORT,
     CONF_TYPE,
@@ -29,7 +30,7 @@ from .const import DOMAIN, SERVICE_RESTORE, SERVICE_SNAPSHOT
 
 LOG = logging.getLogger(__name__)
 
-DATA_AMP_GLOBAL = "xantech_monoprice"
+DATA_MULTIZONE_AMP = "xantech_monoprice"
 
 SUPPORTED_AMP_FEATURES = (
     SUPPORT_VOLUME_MUTE
@@ -80,6 +81,7 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
         vol.Optional(CONF_TYPE, default="xantech8"): vol.In(SUPPORTED_AMP_TYPES),
         vol.Required(CONF_PORT): cv.string,
+        vol.Required(CONF_ENTITY_NAMESPACE): cv.string,
         vol.Required(CONF_ZONES): vol.Schema({ZONE_IDS: ZONE_SCHEMA}),
         vol.Required(CONF_SOURCES): vol.Schema({SOURCE_IDS: SOURCE_SCHEMA}),
         vol.Optional(CONF_BAUDRATE, default=9600): vol.In(BAUD_RATES)
@@ -106,13 +108,14 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
         source_id: extra[CONF_NAME] for source_id, extra in config[CONF_SOURCES].items()
     }
 
-    hass.data[DATA_AMP_GLOBAL] = []
+    namespace = config.get(CONF_ENTITY_NAMESPACE)
+    hass.data[DATA_MULTIZONE_AMP] = []
     for zone_id, extra in config[CONF_ZONES].items():
-        LOG.info("Adding %s zone %d - %s", amp_type, zone_id, extra[CONF_NAME])
-        amp_zone = AmpZone(amp, sources, zone_id, extra[CONF_NAME])
-        hass.data[DATA_AMP_GLOBAL].append(amp_zone)
+        LOG.info("Adding %s %s zone %d - %s", namespace, amp_type, zone_id, extra[CONF_NAME])
+        amp_zone = AmpZone(namespace, amp, sources, zone_id, extra[CONF_NAME])
+        hass.data[DATA_MULTIZONE_AMP].append(amp_zone)
 
-    add_entities(hass.data[DATA_AMP_GLOBAL], True)
+    add_entities(hass.data[DATA_MULTIZONE_AMP], True)
 
     def service_handle(service):
         """Handle for services."""
@@ -121,11 +124,11 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
         if entity_ids:
             devices = [
                 device
-                for device in hass.data[DATA_AMP_GLOBAL]
+                for device in hass.data[DATA_MULTIZONE_AMP]
                 if device.entity_id in entity_ids
             ]
         else:
-            devices = hass.data[DATA_AMP_GLOBAL]
+            devices = hass.data[DATA_MULTIZONE_AMP]
 
         for device in devices:
             if service.service == SERVICE_SNAPSHOT:
@@ -141,7 +144,7 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
 class AmpZone(MediaPlayerDevice):
     """Representation of a matrix amplifier zone."""
 
-    def __init__(self, amp, sources, zone_id, zone_name):
+    def __init__(self, namespace, amp, sources, zone_id, zone_name):
         """Initialize new zone."""
         self._amp = amp
         self._zone_id = zone_id        
@@ -149,6 +152,9 @@ class AmpZone(MediaPlayerDevice):
 
         self._status = None
         self._status_snapshot = None
+
+        self._namespace = namespace
+        self._unique_id = f"{self._namespace}_{self._zone_id}"
 
         # dict source_id -> source name
         self._source_id_to_name = sources
@@ -180,6 +186,11 @@ class AmpZone(MediaPlayerDevice):
             self._source = None
 
         return True
+
+    @property
+    def unique_id(self):
+        """Return unique ID for this device."""
+        return self._unique_id
 
     @property
     def name(self):
