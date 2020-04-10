@@ -24,7 +24,7 @@ from homeassistant.const import (
     STATE_OFF,
     STATE_ON,
 )
-import homeassistant.helpers.config_validation as cv, entity_platform, service
+from homeassistant.helpers import config_validation as cv, entity_platform, service
 
 from .const import DOMAIN, SERVICE_RESTORE, SERVICE_SNAPSHOT
 
