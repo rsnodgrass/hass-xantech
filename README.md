@@ -53,7 +53,6 @@ media_player:
     zones:
       11:
         name: "Main Bedroom"
-        default_source: 5
       12:
         name: "Living Room"
       13:
@@ -64,8 +63,6 @@ media_player:
       5:
         name: "FireTV"
 ```
-
-`default_source`: when zone is powered on through Home Assistant, the input source for this zone will be changed to this. This does not apply when the zone is powered on outside of Home Assistant.
 
 #### Lovelace
 
