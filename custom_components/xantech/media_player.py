@@ -79,7 +79,7 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
         vol.Optional(CONF_TYPE, default="xantech8"): vol.In(SUPPORTED_AMP_TYPES),
         vol.Required(CONF_PORT): cv.string,
-        vol.Required(CONF_ENTITY_NAMESPACE): cv.string,
+        vol.Optional(CONF_ENTITY_NAMESPACE, default="xantech8"): cv.string,
         vol.Required(CONF_ZONES): vol.Schema({ZONE_IDS: ZONE_SCHEMA}),
         vol.Required(CONF_SOURCES): vol.Schema({SOURCE_IDS: SOURCE_SCHEMA}),
         vol.Optional(CONF_BAUDRATE, default=9600): vol.In(BAUD_RATES)
