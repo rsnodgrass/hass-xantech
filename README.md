@@ -23,8 +23,8 @@ See *[pyxantech](https://github.com/rsnodgrass/pyxantech)* for a full list of su
 |              | MRAUDIO4X4 / BXAUDIO4x4  | 4     | *NO*      | audio only; 4-zone uses different protocol (need RS232 spec) |
 |              | MRC44 / MRC44CTL         | 4     | *NO*      | audio + video; 4-zone uses different protocol (need RS232 spec) |
 |              | CM8X8 / CM8X8DR          | 8     | *MAYBE*   | commercial rack mount matrix controller (BNC) |
-| Monoprice    | MPR-SG6Z / 10761         | 6     | *MAYBE*   | audio only; mid-fi version of Xantech |
-| Dayton Audio | DAX66                    | 6     | *MAYBE*   | audio only; mid-fi version of Xantech |
+| Monoprice    | MPR-SG6Z / 10761         | 6     | *MAYBE*   | audio only |
+| Dayton Audio | DAX66                    | 6     | *MAYBE*   | audio only |
 
 * The [Monoprice MPR-SG6Z](https://www.monoprice.com/product?p_id=10761) and [Dayton Audio DAX66](https://www.parts-express.com/dayton-audio-dax66-6-source-6-room-distributed-whole-house-audio-system-with-keypads-25-wpc--300-585) appear to have licensed or copies the serial interface from Xantech. Both Monoprice and Dayton Audio use a version of the Xantech multi-zone controller protocol.
 
