@@ -224,7 +224,10 @@ class ZoneMediaPlayer(MediaPlayerDevice):
     def is_volume_muted(self):
         """Boolean if volume is currently muted."""
         # FIXME: what about when volume == 0?
-        return self._status.get('mute')
+        mute = self._status.get('mute')
+        if mute is None:
+            mute = False
+        return mute
 
     @property
     def supported_features(self):
@@ -312,7 +315,7 @@ class ZoneMediaPlayer(MediaPlayerDevice):
         self._amp.set_volume(self._zone_id, max(volume - 1, 0))
 
     def icon(self):
-        if self.state == STATE_ON:
-            return 'mdi:speaker'
-        else:
+        if self.state == STATE_OFF or self.is_volume_muted:
             return 'mdi:speaker-off'
+        else:
+            return 'mdi:speaker'
