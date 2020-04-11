@@ -150,7 +150,7 @@ class AmpZone(MediaPlayerDevice):
 
         self._unique_id = f"{namespace}_{zone_id}"
 
-        self._status = None
+        self._status = {}
         self._status_snapshot = None
         
         self._source = None
@@ -243,6 +243,8 @@ class AmpZone(MediaPlayerDevice):
         if self._status_snapshot:
             self._amp.restore_zone(self._status_snapshot)
             self.schedule_update_ha_state(True)
+        else:
+            LOG.warning(f"Restore requested for zone {self._zone_id} ({self._name}), but no snapshot was previously saved.")
 
     def select_source(self, source):
         """Set input source."""
