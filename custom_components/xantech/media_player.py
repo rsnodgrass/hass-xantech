@@ -91,7 +91,7 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
 # schema for media player service calls
 SERVICE_CALL_SCHEMA = vol.Schema({ATTR_ENTITY_ID: cv.comp_entity_ids})
 
-MAX_VOLUME = 38
+MAX_VOLUME = 38 # TODO: remove this and use pyxantech amp type configuration
 
 def setup_platform(hass, config, add_entities, discovery_info=None):
     """Set up the Xantech amplifier platform."""
@@ -122,7 +122,7 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
 
     platform = entity_platform.current_platform.get()
 
-    def _call_service(entities, service_call):
+    def _service_call_dispatcher(entities, service_call):
         for entity in entities:
             if service_call.service == SERVICE_SNAPSHOT:
                 entity.snapshot()
@@ -131,13 +131,12 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
 
     # @service.verify_domain_control(hass, DOMAIN)
     def service_handle(service_call):
-        """Handle for services."""
         entities = platform.extract_from_service(service_call)
         if not entities:
             return
 
-        # FIXME: async version: hass.async_add_executor_job(_call_service, entities, service_call)
-        _call_service(entities, service_call)
+        # FIXME: async version: hass.async_add_executor_job(_service_call_dispatcher, entities, service_call)
+        _service_call_dispatcher(entities, service_call)
 
     # register the save/restore snapshot services
     for service_call in [ SERVICE_SNAPSHOT, SERVICE_RESTORE ]:
