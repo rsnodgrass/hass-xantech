@@ -187,8 +187,9 @@ class ZoneMediaPlayer(MediaPlayerDevice):
 
         source_id = status.get('source')
         if source_id:
-            if source_id in self._source_id_to_name:
-                self._source = self._source_id_to_name[source_id]
+            source_name = self._source_id_to_name.get(source_id)
+            if source_name: 
+                self._source = source_name
             else:
                 LOG.error(f"Invalid source id '{source_id}' specified for zone {self._zone_id} ({self._name}), ignoring!")
 
