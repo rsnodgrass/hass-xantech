@@ -129,7 +129,7 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
         if not entities:
             return
 
-        # hass.async_add_executor_job(_call_service, entities, service_call)
+        # FIXME: async version: hass.async_add_executor_job(_call_service, entities, service_call)
         _call_service(entities, service_call)
 
     # register the save/restore snapshot services
@@ -142,7 +142,7 @@ class ZoneMediaPlayer(MediaPlayerDevice):
 
     def __init__(self, namespace, amp, sources, zone_id, zone_name):
         """Initialize new zone."""
-        LOG.info(f"Creating media player {namespace} for zone {zone_id} ({zone_name})")
+        LOG.info(f"Creating  {namespace} media player for zone {zone_id} ({zone_name})")
 
         self._amp = amp
         self._name = zone_name
@@ -197,7 +197,7 @@ class ZoneMediaPlayer(MediaPlayerDevice):
     @property
     def state(self):
         """Return the powered on state of the zone."""
-        power = self._status['power']
+        power = self._status.get('power')
         powered = power is not None and power == True
         LOG.info(f"Power state zone {self._zone_id} ({self._name}): {powered} / {self._status}")
         return powered
@@ -205,7 +205,7 @@ class ZoneMediaPlayer(MediaPlayerDevice):
     @property
     def volume_level(self):
         """Volume level of the media player (0..1)."""
-        volume = self._status['volume']
+        volume = self._status.get('volume')
         if volume is None:
             return None
         return volume / MAX_VOLUME
@@ -214,7 +214,7 @@ class ZoneMediaPlayer(MediaPlayerDevice):
     def is_volume_muted(self):
         """Boolean if volume is currently muted."""
         # FIXME: what about when volume == 0?
-        return self._status['mute']
+        return self._status.get('mute')
 
     @property
     def supported_features(self):
@@ -281,7 +281,7 @@ class ZoneMediaPlayer(MediaPlayerDevice):
 
     def volume_up(self):
         """Volume up the media player."""
-        volume = self._status['volume']
+        volume = self._status.get('volume')
         if volume is None:
             return
 
@@ -290,7 +290,7 @@ class ZoneMediaPlayer(MediaPlayerDevice):
 
     def volume_down(self):
         """Volume down media player."""
-        volume = self._status['volume']
+        volume = self._status.get('volume')
         if volume is None:
             return
 
