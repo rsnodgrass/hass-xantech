@@ -41,9 +41,8 @@ SUPPORTED_AMP_FEATURES = (
 
 CONF_SOURCES = "sources"
 CONF_ZONES = "zones"
-CONF_BAUDRATE = "baudrate"
 CONF_DEFAULT_SOURCE = "default_source"
-CONF_SERIAL_CONFIG = 'rs232'
+CONF_SERIAL_CONFIG = "rs232"
 
 # Valid source ids: 
 #    monoprice6: 1-6 (Monoprice and Dayton Audio)
@@ -71,11 +70,12 @@ ZONE_IDS = vol.All(
 )
 ZONE_SCHEMA = vol.Schema({
     vol.Required(CONF_NAME, default="Audio Zone"): cv.string,
-#    vol.Optional(CONF_DEFAULT_SOURCE): vol.In(SOURCE_IDS)
     vol.Optional(CONF_DEFAULT_SOURCE): cv.positive_int
 })
 
-MEDIA_PLAYER_SCHEMA = vol.Schema({ATTR_ENTITY_ID: cv.comp_entity_ids})
+SERIAL_CONFIG_SCHEMA = vol.Schema({
+    vol.Optional("baudrate"): vol.In(BAUD_RATES)
+})
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
@@ -84,9 +84,12 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
         vol.Optional(CONF_ENTITY_NAMESPACE, default="xantech8"): cv.string,
         vol.Required(CONF_ZONES): vol.Schema({ZONE_IDS: ZONE_SCHEMA}),
         vol.Required(CONF_SOURCES): vol.Schema({SOURCE_IDS: SOURCE_SCHEMA}),
-        vol.Optional(CONF_BAUDRATE, default=9600): vol.In(BAUD_RATES)
+        vol.Optional(CONF_SERIAL_CONFIG): SERIAL_CONFIG_SCHEMA
     }
 )
+
+# schema for media player service calls
+SERVICE_CALL_SCHEMA = vol.Schema({ATTR_ENTITY_ID: cv.comp_entity_ids})
 
 MAX_VOLUME = 38
 
@@ -138,7 +141,7 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
 
     # register the save/restore snapshot services
     for service_call in [ SERVICE_SNAPSHOT, SERVICE_RESTORE ]:
-        hass.services.register(DOMAIN, service_call, service_handle, schema=MEDIA_PLAYER_SCHEMA)
+        hass.services.register(DOMAIN, service_call, service_handle, schema=SERVICE_CALL_SCHEMA)
 
 
 class ZoneMediaPlayer(MediaPlayerDevice):
