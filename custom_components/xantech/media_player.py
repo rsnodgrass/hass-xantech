@@ -173,8 +173,8 @@ class ZoneMediaPlayer(MediaPlayerDevice):
 
     def update(self):
         """Retrieve latest state."""
-        LOG.debug(f"Attempting to update {self._zone_id} ({self._name})")
         try:
+            LOG.debug(f"Attempting to update {self._zone_id} ({self._name})")
             status = self._amp.zone_status(self._zone_id)
             if not status:
                 return
@@ -186,10 +186,11 @@ class ZoneMediaPlayer(MediaPlayerDevice):
         self._status = status
 
         source_id = status.get('source')
-        if source_id in self._source_id_to_name:
-            self._source = self._source_id_to_name[source_id]
-        else:
-            LOG.error(f"Invalid source id '{source_id}' specified for zone {self._zone_id} ({self._name}), ignoring!")
+        if source_id:
+            if source_id in self._source_id_to_name:
+                self._source = self._source_id_to_name[source_id]
+            else:
+                LOG.error(f"Invalid source id '{source_id}' specified for zone {self._zone_id} ({self._name}), ignoring!")
 
     @property
     def unique_id(self):
