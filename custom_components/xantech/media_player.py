@@ -250,6 +250,7 @@ class AmpZone(MediaPlayerDevice):
         """Set input source."""
         LOG.info(f"Checking for {source} in {self._source_name_to_id}")
         if source not in self._source_name_to_id:
+            LOG.warning(f"Selected source {source} not valid for zone {self._zone_id} ({self._name}), ignoring!")
             return
 
         source_id = self._source_name_to_id[source]
