@@ -109,10 +109,7 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
 
     devices = []
     for zone_id, extra in config[CONF_ZONES].items():
-        name = extra[CONF_NAME]
-        amp_zone = AmpZone(namespace, amp, sources, zone_id, name)
-        devices.append(amp_zone)
-
+        devices.append( ZoneMediaPlayer(namespace, amp, sources, zone_id, extra[CONF_NAME]) )
     add_entities(devices, True)
 
     platform = entity_platform.current_platform.get()
@@ -139,7 +136,7 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
         hass.services.register(DOMAIN, service_call, service_handle, schema=MEDIA_PLAYER_SCHEMA)
 
 
-class AmpZone(MediaPlayerDevice):
+class ZoneMediaPlayer(MediaPlayerDevice):
     """Representation of a matrix amplifier zone."""
 
     def __init__(self, namespace, amp, sources, zone_id, zone_name):
