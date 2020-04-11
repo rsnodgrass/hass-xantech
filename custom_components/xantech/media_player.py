@@ -173,6 +173,7 @@ class ZoneMediaPlayer(MediaPlayerDevice):
 
     def update(self):
         """Retrieve latest state."""
+        LOG.debug(f"Attempting to update {self._zone_id} ({self._name})")
         try:
             status = self._amp.zone_status(self._zone_id)
             if not status:
