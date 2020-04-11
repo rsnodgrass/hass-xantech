@@ -43,6 +43,7 @@ CONF_SOURCES = "sources"
 CONF_ZONES = "zones"
 CONF_BAUDRATE = "baudrate"
 CONF_DEFAULT_SOURCE = "default_source"
+CONF_SERIAL_CONFIG = 'rs232'
 
 # Valid source ids: 
 #    monoprice6: 1-6 (Monoprice and Dayton Audio)
@@ -52,7 +53,9 @@ SOURCE_SCHEMA = vol.Schema({
     vol.Required(CONF_NAME, default="Unknown Source"): cv.string}
 )
 
-# TODO: this should come from config for each model...from underlying pyxantech
+# TODO: this should come from config for each model...from underlying pyxantech, which
+# probably requires checking at runtime (plus a failure in one zone id shouldn't fail
+# ALL the zones from being created)
 #
 # Valid zone ids: 
 #   monoprice6: 11-16 or 21-26 or 31-36 (Monoprice and Dayton Audio)
@@ -72,7 +75,6 @@ ZONE_SCHEMA = vol.Schema({
     vol.Optional(CONF_DEFAULT_SOURCE): cv.positive_int
 })
 
-# FIXME: is this necessary?
 MEDIA_PLAYER_SCHEMA = vol.Schema({ATTR_ENTITY_ID: cv.comp_entity_ids})
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
@@ -89,15 +91,17 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
 MAX_VOLUME = 38
 
 def setup_platform(hass, config, add_entities, discovery_info=None):
-    """Set up the Xantech 8-zone amplifier platform."""
+    """Set up the Xantech amplifier platform."""
     port = config.get(CONF_PORT)
     amp_type = config.get(CONF_TYPE)
     namespace = config.get(CONF_ENTITY_NAMESPACE)
 
     try:
-        serial_config = {
-            'rs232': { 'baudrate': config.get(CONF_BAUDRATE) }
-        }
+        # allow manually overriding any of the serial configuration using the 'rs232' key
+        serial_config = config.get(CONF_SERIAL_CONFIG)
+        if serial_config is None:
+            serial_config = None
+        
         amp = get_amp_controller(amp_type, port, serial_config)
     except SerialException:
         LOG.error(f"Error connecting to '{amp_type}' amp using {port}, ignoring setup!")
