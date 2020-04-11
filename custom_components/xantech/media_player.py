@@ -237,20 +237,21 @@ class ZoneMediaPlayer(MediaPlayerDevice):
     def snapshot(self):
         """Save zone's current state."""
         self._status_snapshot = self._amp.zone_status(self._zone_id)
+        LOG.info(f"Saved state snapshot for zone {self._zone_id} ({self._name})")
 
     def restore(self):
         """Restore saved state."""
         if self._status_snapshot:
             self._amp.restore_zone(self._status_snapshot)
             self.schedule_update_ha_state(True)
+            LOG.info(f"Restored previous state for zone {self._zone_id} ({self._name})")
         else:
-            LOG.warning(f"Restore requested for zone {self._zone_id} ({self._name}), but no snapshot was previously saved.")
+            LOG.warning(f"Restore service called for zone {self._zone_id} ({self._name}), but no snapshot previously saved.")
 
     def select_source(self, source):
         """Set input source."""
-        LOG.info(f"Checking for {source} in {self._source_name_to_id}")
         if source not in self._source_name_to_id:
-            LOG.warning(f"Selected source {source} not valid for zone {self._zone_id} ({self._name}), ignoring!")
+            LOG.warning(f"Selected source '{source}' not valid for zone {self._zone_id} ({self._name}), ignoring! Sources: {self._source_name_to_id}")
             return
 
         source_id = self._source_name_to_id[source]
@@ -269,6 +270,7 @@ class ZoneMediaPlayer(MediaPlayerDevice):
 
     def mute_volume(self, mute):
         """Mute (true) or unmute (false) media player."""
+        LOG.debug(f"Setting mute={mute} for zone {self._zone_id} ({self._name}))")
         self._amp.set_mute(self._zone_id, mute)
 
     def set_volume_level(self, volume):
@@ -283,6 +285,7 @@ class ZoneMediaPlayer(MediaPlayerDevice):
         if volume is None:
             return
 
+        # FIXME: call the volume up API on the amp object, instead of manually increasing volume
         # reminder the volume is on the amplifier scale (0-38), not Home Assistants (1-100)
         self._amp.set_volume(self._zone_id, min(volume + 1, MAX_VOLUME))
 
@@ -292,6 +295,7 @@ class ZoneMediaPlayer(MediaPlayerDevice):
         if volume is None:
             return
 
+        # FIXME: call the volume down API on the amp object, instead of manually increasing volume
         # reminder the volume is on the amplifier scale (0-38), not Home Assistants (1-100)
         self._amp.set_volume(self._zone_id, max(volume - 1, 0))
 
