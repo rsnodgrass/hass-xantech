@@ -114,7 +114,7 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
         devices.append(amp_zone)
 
     add_entities(devices, True)
-    
+
     platform = entity_platform.current_platform.get()
 
     def _call_service(entities, service_call):
@@ -134,7 +134,7 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
         # hass.async_add_executor_job(_call_service, entities, service_call)
         _call_service(entities, service_call)
 
-    # register the save/restore snapshot service APIs
+    # register the save/restore snapshot services
     for service_call in [ SERVICE_SNAPSHOT, SERVICE_RESTORE ]:
         hass.services.register(DOMAIN, service_call, service_handle, schema=MEDIA_PLAYER_SCHEMA)
 
@@ -145,45 +145,42 @@ class AmpZone(MediaPlayerDevice):
     def __init__(self, namespace, amp, sources, zone_id, zone_name):
         """Initialize new zone."""
         self._amp = amp
-        self._zone_id = zone_id        
         self._name = zone_name
+        self._zone_id = zone_id        
+
+        self._unique_id = f"{namespace}_{zone_id}"
 
         self._status = None
         self._status_snapshot = None
+        
+        self._source = None
+        self._source_id_to_name = sources # [source_id] -> source name
+        self._source_name_to_id = {v: k for k, v in sources.items()} # [source name] -> source_id
 
-        self._namespace = namespace
-        self._unique_id = f"{self._namespace}_{self._zone_id}"
-
-        # dict source_id -> source name
-        self._source_id_to_name = sources
-
-        # dict source name -> source_id
-        self._source_name_to_id = {v: k for k, v in sources.items()}
-
-        # FIXME: should this be sorted, or an order specified in HA config?
-        # ordered list of all source names
+        # sort list of source names
         self._source_names = sorted(
             self._source_name_to_id.keys(), key=lambda v: self._source_name_to_id[v]
         )
+        # TODO: ideally the source order could be overridden in YAML config (e.g. TV should appear first on list)
 
     def update(self):
         """Retrieve latest state."""
-        status = self._amp.zone_status(self._zone_id)
-        if not status:
-            return False
-
-        # FIXME: check that status has the required fields before replacing existing
+        try:
+            status = self._amp.zone_status(self._zone_id)
+            if not status:
+                return
+        except Exception as e:
+            LOG.warning(f"Error updating {self._name} zone {self._zone_id}: %s", e)
+            return
 
         LOG.debug(f"{self._name} zone {self._zone_id} status update: {status}")
         self._status = status
 
-        source_id = status['source']
+        source_id = status.get('source')
         if source_id in self._source_id_to_name:
             self._source = self._source_id_to_name[source_id]
         else:
-            self._source = None
-
-        return True
+            LOG.error(f"Invalid source id {source_id} specified for {self._name} zone {self._zone_id}, ignoring!")
 
     @property
     def unique_id(self):
