@@ -107,6 +107,7 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
         source_id: extra[CONF_NAME] for source_id, extra in config[CONF_SOURCES].items()
     }
 
+    LOG.info(f"Creating media player for each zone of {amp_type}/{namespace}; sources={sources}")
     devices = []
     for zone_id, extra in config[CONF_ZONES].items():
         devices.append( ZoneMediaPlayer(namespace, amp, sources, zone_id, extra[CONF_NAME]) )
@@ -141,7 +142,7 @@ class ZoneMediaPlayer(MediaPlayerDevice):
 
     def __init__(self, namespace, amp, sources, zone_id, zone_name):
         """Initialize new zone."""
-        LOG.info(f"Creating media player {namespace} for zone {zone_id} ({zone_name}): {sources}")
+        LOG.info(f"Creating media player {namespace} for zone {zone_id} ({zone_name})")
 
         self._amp = amp
         self._name = zone_name
