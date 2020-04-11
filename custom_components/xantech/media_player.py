@@ -109,8 +109,8 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
 
     devices = []
     for zone_id, extra in config[CONF_ZONES].items():
-        LOG.info("Adding %s %s zone %d (%s)", namespace, amp_type, zone_id, extra[CONF_NAME])
-        amp_zone = AmpZone(namespace, amp, sources, zone_id, extra[CONF_NAME])
+        name = extra[CONF_NAME]
+        amp_zone = AmpZone(namespace, amp, sources, zone_id, name)
         devices.append(amp_zone)
 
     add_entities(devices, True)
@@ -144,10 +144,14 @@ class AmpZone(MediaPlayerDevice):
 
     def __init__(self, namespace, amp, sources, zone_id, zone_name):
         """Initialize new zone."""
+        LOG.info(f"Creating media player {namespace} for zone {zone_id} ({zone_name}): {sources}")
+
         self._amp = amp
         self._name = zone_name
         self._zone_id = zone_id        
 
+        # FIXME: since this should be a logical media player...why is it not good enough for the user
+        # specified name to represent this?  Other than it could be changed...
         self._unique_id = f"{namespace}_{zone_id}"
 
         self._status = {}
