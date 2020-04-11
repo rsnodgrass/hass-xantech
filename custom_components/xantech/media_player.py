@@ -198,8 +198,7 @@ class ZoneMediaPlayer(MediaPlayerDevice):
     def state(self):
         """Return the powered on state of the zone."""
         power = self._status.get('power')
-        powered = power is not None and power == True
-        return powered
+        return power is not None and power == True
 
     @property
     def volume_level(self):
