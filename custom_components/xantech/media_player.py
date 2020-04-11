@@ -199,7 +199,6 @@ class ZoneMediaPlayer(MediaPlayerDevice):
         """Return the powered on state of the zone."""
         power = self._status.get('power')
         powered = power is not None and power == True
-        LOG.info(f"Power state zone {self._zone_id} ({self._name}): {powered} / {self._status}")
         return powered
 
     @property
