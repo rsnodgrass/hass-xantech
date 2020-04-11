@@ -92,6 +92,7 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
     """Set up the Xantech 8-zone amplifier platform."""
     port = config.get(CONF_PORT)
     amp_type = config.get(CONF_TYPE)
+    namespace = config.get(CONF_ENTITY_NAMESPACE)
 
     try:
         serial_config = {
@@ -99,17 +100,16 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
         }
         amp = get_amp_controller(amp_type, port, serial_config)
     except SerialException:
-        LOG.error("Error connecting to '%s' amplifier using %s", amp_type, port)
+        LOG.error(f"Error connecting to '{amp_type}' amp using {port}, ignoring setup!")
         return
 
     sources = {
         source_id: extra[CONF_NAME] for source_id, extra in config[CONF_SOURCES].items()
     }
 
-    namespace = config.get(CONF_ENTITY_NAMESPACE)
     devices = []
     for zone_id, extra in config[CONF_ZONES].items():
-        LOG.info("Adding %s %s zone %d - %s", namespace, amp_type, zone_id, extra[CONF_NAME])
+        LOG.info("Adding %s %s zone %d (%s)", namespace, amp_type, zone_id, extra[CONF_NAME])
         amp_zone = AmpZone(namespace, amp, sources, zone_id, extra[CONF_NAME])
         devices.append(amp_zone)
 
@@ -170,17 +170,17 @@ class AmpZone(MediaPlayerDevice):
             if not status:
                 return
         except Exception as e:
-            LOG.warning(f"Error updating {self._name} zone {self._zone_id}: %s", e)
+            LOG.warning(f"Failed updating zone {self._zone_id} ({self._name}): %s", e)
             return
 
-        LOG.debug(f"{self._name} zone {self._zone_id} status update: {status}")
+        LOG.debug(f"Zone {self._zone_id} ({self._name}) status update: {status}")
         self._status = status
 
         source_id = status.get('source')
         if source_id in self._source_id_to_name:
             self._source = self._source_id_to_name[source_id]
         else:
-            LOG.error(f"Invalid source id {source_id} specified for {self._name} zone {self._zone_id}, ignoring!")
+            LOG.error(f"Invalid source id '{source_id}' specified for zone {self._zone_id} ({self._name}), ignoring!")
 
     @property
     def unique_id(self):
@@ -197,7 +197,7 @@ class AmpZone(MediaPlayerDevice):
         """Return the powered on state of the zone."""
         power = self._status['power']
         powered = power is not None and power == True
-        LOG.info(f"Power state zone {self._zone_id}: {powered} / {self._status}")
+        LOG.info(f"Power state zone {self._zone_id} ({self._name}): {powered} / {self._status}")
         return powered
 
     @property
@@ -251,17 +251,17 @@ class AmpZone(MediaPlayerDevice):
             return
 
         source_id = self._source_name_to_id[source]
-        LOG.info(f"Switching zone {self._zone_id} to source {source_id} ({source})")
+        LOG.info(f"Switching zone {self._zone_id} ({self._name}) to source {source_id} ({source})")
         self._amp.set_source(self._zone_id, source_id)
 
     def turn_on(self):
         """Turn the media player on."""
-        LOG.debug(f"Turning {self._name} zone {self._zone_id} on")
+        LOG.debug(f"Turning ON zone {self._zone_id} ({self._name})")
         self._amp.set_power(self._zone_id, True)
 
     def turn_off(self):
         """Turn the media player off."""
-        LOG.debug(f"Turning {self._name} zone {self._zone_id} off")
+        LOG.debug(f"Turning OFF zone {self._zone_id} ({self._name}))")
         self._amp.set_power(self._zone_id, False)
 
     def mute_volume(self, mute):
@@ -271,7 +271,7 @@ class AmpZone(MediaPlayerDevice):
     def set_volume_level(self, volume):
         """Set volume level, range 0—1.0"""
         amp_volume = int(volume * MAX_VOLUME)
-        LOG.debug(f"Setting {self._name} zone {self._zone_id} volume to {amp_volume} (HA volume {volume}")
+        LOG.debug(f"Setting zone {self._zone_id} ({self._name}) volume to {amp_volume} (HA volume {volume}")
         self._amp.set_volume(self._zone_id, amp_volume)
 
     def volume_up(self):
