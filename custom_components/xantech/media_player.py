@@ -122,7 +122,7 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
     devices = []
     for zone_id, extra in config[CONF_ZONES].items():
         devices.append( ZoneMediaPlayer(namespace, amp, sources, zone_id, extra[CONF_NAME]) )
-    add_entities(devices, True)
+    #FIXME add_entities(devices, True)
 
     platform = entity_platform.current_platform.get()
 
