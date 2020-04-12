@@ -74,7 +74,9 @@ ZONE_SCHEMA = vol.Schema({
 })
 
 SERIAL_CONFIG_SCHEMA = vol.Schema({
-    vol.Optional("baudrate"): vol.In(BAUD_RATES)
+    vol.Optional("baudrate"): vol.In(BAUD_RATES),
+    vol.Optional("timeout"): cv.small_float,
+    vol.Optional("write_timeout"): cv.small_float
 })
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
@@ -150,7 +152,7 @@ class ZoneMediaPlayer(MediaPlayerDevice):
 
     def __init__(self, namespace, amp, sources, zone_id, zone_name):
         """Initialize new zone."""
-        LOG.info(f"Creating  {namespace} media player for zone {zone_id} ({zone_name})")
+        LOG.info(f"Creating {namespace} media player for zone {zone_id} ({zone_name})")
 
         self._amp = amp
         self._name = zone_name
@@ -171,7 +173,9 @@ class ZoneMediaPlayer(MediaPlayerDevice):
         self._source_names = sorted(
             self._source_name_to_id.keys(), key=lambda v: self._source_name_to_id[v]
         )
-        # TODO: ideally the source order could be overridden in YAML config (e.g. TV should appear first on list)
+        # TODO: Ideally the source order could be overridden in YAML config (e.g. TV should appear first on list).
+        #       Optionally, we could just sort based on the zone number, and let the user physically wire in the
+        #       order they want (doesn't work for pre-amp out channel 7/8 on some Xantech)
 
     def update(self):
         """Retrieve latest state."""
