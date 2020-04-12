@@ -98,14 +98,16 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
     port = config.get(CONF_PORT)
     amp_type = config.get(CONF_TYPE)
     namespace = config.get(CONF_ENTITY_NAMESPACE)
+    amp = None
 
     try:
         # allow manually overriding any of the serial configuration using the 'rs232' key
         serial_config = config.get(CONF_SERIAL_CONFIG)
-        if serial_config is None:
-            serial_config = None
-        
-        amp = get_amp_controller(amp_type, port, serial_config)
+        if serial_config:
+            amp = get_amp_controller(amp_type, port, serial_config_overrides=serial_config)
+        else: 
+            amp = get_amp_controller(amp_type, port)
+
     except SerialException:
         LOG.error(f"Error connecting to '{amp_type}' amp using {port}, ignoring setup!")
         return
