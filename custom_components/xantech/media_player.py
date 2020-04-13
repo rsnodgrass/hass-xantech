@@ -193,7 +193,11 @@ class ZoneMediaPlayer(MediaPlayerDevice):
             if source_name: 
                 self._source = source_name
             else:
-                LOG.error(f"Invalid source id '{source_id}' specified for zone {self._zone_id} ({self._name}), ignoring!")
+                # sometimes the client may have not configured a source, but if the amplifier is set
+                # to a source other than one defined, go ahead and dynamically create that source. This
+                # could happen if the user changes the source through a different app or command.
+                LOG.error(f"Invalid source id '{source_id}' specified for zone {self._zone_id} ({self._name}), adding this source!")
+                self._source_id_to_name[source_id] = f"Source {source_id}"
 
     @property
     def unique_id(self):
