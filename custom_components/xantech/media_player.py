@@ -105,10 +105,9 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
     try:
         # allow manually overriding any of the serial configuration using the 'rs232' key
         serial_config = config.get(CONF_SERIAL_CONFIG)
-        if serial_config:
-            amp = get_amp_controller(amp_type, port, serial_config_overrides=serial_config)
-        else: 
-            amp = get_amp_controller(amp_type, port)
+        if not serial_config:
+            serial_config = {}
+        amp = get_amp_controller(amp_type, port, serial_config_overrides=serial_config)
 
     except SerialException:
         LOG.error(f"Error connecting to '{amp_type}' amp using {port}, ignoring setup!")
@@ -119,10 +118,10 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
     }
 
     LOG.info(f"Creating media player for each zone of {amp_type}/{namespace}; sources={sources}")
-    devices = []
+    entities = []
     for zone_id, extra in config[CONF_ZONES].items():
-        devices.append( ZoneMediaPlayer(namespace, amp, sources, zone_id, extra[CONF_NAME]) )
-    #FIXME add_entities(devices, True)
+        entities.append( ZoneMediaPlayer(namespace, amp, sources, zone_id, extra[CONF_NAME]) )
+    add_entities(entities, True)
 
     platform = entity_platform.current_platform.get()
 
@@ -178,7 +177,7 @@ class ZoneMediaPlayer(MediaPlayerDevice):
         #       order they want (doesn't work for pre-amp out channel 7/8 on some Xantech)
 
     def update(self):
-        """Retrieve latest state."""
+        """Retrieve the latest state."""
         try:
             LOG.debug(f"Attempting to update {self._zone_id} ({self._name})")
             status = self._amp.zone_status(self._zone_id)
