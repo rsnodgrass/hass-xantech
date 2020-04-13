@@ -4,7 +4,7 @@ import logging
 
 import voluptuous as vol
 from serial import SerialException
-from pyxantech import get_amp_controller, SUPPORTED_AMP_TYPES, BAUD_RATES
+from pyxantech import get_async_amp_controller, SUPPORTED_AMP_TYPES, BAUD_RATES
 
 from homeassistant.components.media_player import PLATFORM_SCHEMA, MediaPlayerDevice
 from homeassistant.components.media_player.const import (
@@ -24,6 +24,7 @@ from homeassistant.const import (
     STATE_OFF,
     STATE_ON,
 )
+from homeassistant.helpers.typing import HomeAssistantType
 from homeassistant.helpers import config_validation as cv, entity_platform, service
 
 from .const import DOMAIN, SERVICE_RESTORE, SERVICE_SNAPSHOT
@@ -95,7 +96,7 @@ SERVICE_CALL_SCHEMA = vol.Schema({ATTR_ENTITY_ID: cv.comp_entity_ids})
 
 MAX_VOLUME = 38 # TODO: remove this and use pyxantech amp type configuration
 
-def setup_platform(hass, config, add_entities, discovery_info=None):
+async def async_setup_platform(hass: HomeAssistantType, config, async_add_entities, discovery_info=None):
     """Set up the Xantech amplifier platform."""
     port = config.get(CONF_PORT)
     amp_type = config.get(CONF_TYPE)
@@ -106,7 +107,8 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
         serial_config = config.get(CONF_SERIAL_CONFIG)
         if not serial_config:
             serial_config = {}
-        amp = get_amp_controller(amp_type, port, serial_config_overrides=serial_config)
+        # FIXME: rename this to async_get_amp_controller()
+        amp = await get_async_amp_controller(amp_type, port, hass.loop, serial_config_overrides=serial_config)
 
     except SerialException:
         LOG.error(f"Error connecting to '{amp_type}' amp using {port}, ignoring setup!")
@@ -120,29 +122,25 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
     entities = []
     for zone_id, extra in config[CONF_ZONES].items():
         entities.append( ZoneMediaPlayer(namespace, amp, sources, zone_id, extra[CONF_NAME]) )
-    add_entities(entities, True)
+    async_add_entities(entities, True)
 
+    # setup the service calls
     platform = entity_platform.current_platform.get()
 
-    def _service_call_dispatcher(entities, service_call):
-        for entity in entities:
-            if service_call.service == SERVICE_SNAPSHOT:
-                entity.snapshot()
-            elif service_call.service == SERVICE_RESTORE:
-                entity.restore()
-
-    # @service.verify_domain_control(hass, DOMAIN)
-    def service_handle(service_call):
+    async def async_service_call_dispatcher(service_call):
         entities = platform.extract_from_service(service_call)
         if not entities:
             return
 
-        # FIXME: async version: hass.async_add_executor_job(_service_call_dispatcher, entities, service_call)
-        _service_call_dispatcher(entities, service_call)
+        for entity in entities:
+            if service_call.service == SERVICE_SNAPSHOT:
+                await entity.async_snapshot()
+            elif service_call.service == SERVICE_RESTORE:
+                await entity.async_restore()
 
     # register the save/restore snapshot services
     for service_call in [ SERVICE_SNAPSHOT, SERVICE_RESTORE ]:
-        hass.services.register(DOMAIN, service_call, service_handle, schema=SERVICE_CALL_SCHEMA)
+        hass.services.async_register(DOMAIN, service_call, async_service_call_dispatcher, schema=SERVICE_CALL_SCHEMA)
 
 
 class ZoneMediaPlayer(MediaPlayerDevice):
@@ -175,11 +173,11 @@ class ZoneMediaPlayer(MediaPlayerDevice):
         #       Optionally, we could just sort based on the zone number, and let the user physically wire in the
         #       order they want (doesn't work for pre-amp out channel 7/8 on some Xantech)
 
-    def update(self):
+    async def async_update(self):
         """Retrieve the latest state."""
         try:
             LOG.debug(f"Attempting to update {self._zone_id} ({self._name})")
-            status = self._amp.zone_status(self._zone_id)
+            status = await self._amp.zone_status(self._zone_id)
             if not status:
                 return
         except Exception as e:
@@ -248,21 +246,21 @@ class ZoneMediaPlayer(MediaPlayerDevice):
         """List of available input sources."""
         return self._source_names
 
-    def snapshot(self):
+    async def async_snapshot(self):
         """Save zone's current state."""
-        self._status_snapshot = self._amp.zone_status(self._zone_id)
+        self._status_snapshot = await self._amp.zone_status(self._zone_id)
         LOG.info(f"Saved state snapshot for zone {self._zone_id} ({self._name})")
 
-    def restore(self):
+    async def async_restore(self):
         """Restore saved state."""
         if self._status_snapshot:
-            self._amp.restore_zone(self._status_snapshot)
-            self.schedule_update_ha_state(True)
+            await self._amp.restore_zone(self._status_snapshot)
+            #FIXME: self.schedule_update_ha_state(True)
             LOG.info(f"Restored previous state for zone {self._zone_id} ({self._name})")
         else:
             LOG.warning(f"Restore service called for zone {self._zone_id} ({self._name}), but no snapshot previously saved.")
 
-    def select_source(self, source):
+    async def async_select_source(self, source):
         """Set input source."""
         if source not in self._source_name_to_id:
             LOG.warning(f"Selected source '{source}' not valid for zone {self._zone_id} ({self._name}), ignoring! Sources: {self._source_name_to_id}")
@@ -270,31 +268,31 @@ class ZoneMediaPlayer(MediaPlayerDevice):
 
         source_id = self._source_name_to_id[source]
         LOG.info(f"Switching zone {self._zone_id} ({self._name}) to source {source_id} ({source})")
-        self._amp.set_source(self._zone_id, source_id)
+        await self._amp.set_source(self._zone_id, source_id)
 
-    def turn_on(self):
+    async def async_turn_on(self):
         """Turn the media player on."""
         LOG.debug(f"Turning ON zone {self._zone_id} ({self._name})")
-        self._amp.set_power(self._zone_id, True)
+        await self._amp.set_power(self._zone_id, True)
         # FIXME: need to schedule a poll of the status of the zone ASAP to pickup volume levels/etc
 
-    def turn_off(self):
+    async def async_turn_off(self):
         """Turn the media player off."""
         LOG.debug(f"Turning OFF zone {self._zone_id} ({self._name}))")
-        self._amp.set_power(self._zone_id, False)
+        await self._amp.set_power(self._zone_id, False)
 
-    def mute_volume(self, mute):
+    async def async_mute_volume(self, mute):
         """Mute (true) or unmute (false) media player."""
         LOG.debug(f"Setting mute={mute} for zone {self._zone_id} ({self._name}))")
         self._amp.set_mute(self._zone_id, mute)
 
-    def set_volume_level(self, volume):
+    async def async_set_volume_level(self, volume):
         """Set volume level, range 0—1.0"""
         amp_volume = int(volume * MAX_VOLUME)
         LOG.debug(f"Setting zone {self._zone_id} ({self._name}) volume to {amp_volume} (HA volume {volume}")
-        self._amp.set_volume(self._zone_id, amp_volume)
+        await self._amp.set_volume(self._zone_id, amp_volume)
 
-    def volume_up(self):
+    async def async_volume_up(self):
         """Volume up the media player."""
         volume = self._status.get('volume')
         if volume is None:
@@ -302,9 +300,9 @@ class ZoneMediaPlayer(MediaPlayerDevice):
 
         # FIXME: call the volume up API on the amp object, instead of manually increasing volume
         # reminder the volume is on the amplifier scale (0-38), not Home Assistants (1-100)
-        self._amp.set_volume(self._zone_id, min(volume + 1, MAX_VOLUME))
+        await self._amp.set_volume(self._zone_id, min(volume + 1, MAX_VOLUME))
 
-    def volume_down(self):
+    async def async_volume_down(self):
         """Volume down media player."""
         volume = self._status.get('volume')
         if volume is None:
@@ -312,7 +310,7 @@ class ZoneMediaPlayer(MediaPlayerDevice):
 
         # FIXME: call the volume down API on the amp object, instead of manually increasing volume
         # reminder the volume is on the amplifier scale (0-38), not Home Assistants (1-100)
-        self._amp.set_volume(self._zone_id, max(volume - 1, 0))
+        await self._amp.set_volume(self._zone_id, max(volume - 1, 0))
 
     @property
     def icon(self):
