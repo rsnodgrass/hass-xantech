@@ -280,7 +280,9 @@ class ZoneMediaPlayer(MediaPlayerDevice):
         """Turn the media player on."""
         LOG.debug(f"Turning ON zone {self._zone_id} ({self._name})")
         await self._amp.set_power(self._zone_id, True)
-        # FIXME: need to schedule a poll of the status of the zone ASAP to pickup volume levels/etc
+        
+        # schedule a poll of the status of the zone ASAP to pickup volume levels/etc
+        await self.async_update_ha_state()
 
     async def async_turn_off(self):
         """Turn the media player off."""
