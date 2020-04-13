@@ -282,8 +282,7 @@ class ZoneMediaPlayer(MediaPlayerDevice):
         await self._amp.set_power(self._zone_id, True)
 
         # schedule a poll of the status of the zone ASAP to pickup volume levels/etc
-        await self.async_update()
-        self.async_update_ha_state(force_refresh=True)
+        self.async_schedule_update_ha_state(force_refresh=True)
 
     async def async_turn_off(self):
         """Turn the media player off."""
