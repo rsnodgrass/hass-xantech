@@ -100,7 +100,6 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
     port = config.get(CONF_PORT)
     amp_type = config.get(CONF_TYPE)
     namespace = config.get(CONF_ENTITY_NAMESPACE)
-    amp = None
 
     try:
         # allow manually overriding any of the serial configuration using the 'rs232' key
@@ -240,11 +239,6 @@ class ZoneMediaPlayer(MediaPlayerDevice):
         return SUPPORTED_AMP_FEATURES
 
     @property
-    def media_title(self):
-        """Return the current source as medial title."""
-        return self._source
-
-    @property
     def source(self):
         """Return the current input source of the device."""
         return self._source
@@ -282,6 +276,7 @@ class ZoneMediaPlayer(MediaPlayerDevice):
         """Turn the media player on."""
         LOG.debug(f"Turning ON zone {self._zone_id} ({self._name})")
         self._amp.set_power(self._zone_id, True)
+        # FIXME: need to schedule a poll of the status of the zone ASAP to pickup volume levels/etc
 
     def turn_off(self):
         """Turn the media player off."""
@@ -319,6 +314,7 @@ class ZoneMediaPlayer(MediaPlayerDevice):
         # reminder the volume is on the amplifier scale (0-38), not Home Assistants (1-100)
         self._amp.set_volume(self._zone_id, max(volume - 1, 0))
 
+    @property
     def icon(self):
         if self.state == STATE_OFF or self.is_volume_muted:
             return 'mdi:speaker-off'
