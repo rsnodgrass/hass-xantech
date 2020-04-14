@@ -27,7 +27,7 @@ from homeassistant.const import (
 from homeassistant.helpers.typing import HomeAssistantType
 from homeassistant.helpers import config_validation as cv, entity_platform, service
 
-from .const import DOMAIN, SERVICE_RESTORE, SERVICE_SNAPSHOT
+from .const import DOMAIN, SERVICE_RESTORE, SERVICE_SNAPSHOT, SERVICE_JOIN, SERVICE_UNJOIN
 
 LOG = logging.getLogger(__name__)
 
@@ -326,3 +326,24 @@ class ZoneMediaPlayer(MediaPlayerDevice):
             return 'mdi:speaker-off'
         else:
             return 'mdi:speaker'
+
+
+# For similar implementation details, see:
+#   https://github.com/home-assistant/core/blob/dev/homeassistant/components/snapcast/media_player.py
+
+    async def async_join(self, master_zone_id, add_zones):
+        """Grouped several multi-room zones into a group that is controlled and coordinated by a master zone.
+           All volume/mute/source options to the master zone apply to all zones."""
+        if not add_zones:
+            return
+        LOG.info(f"Adding zones {add_zones} to group")
+        # FIXME: implement
+        return
+
+    async def async_unjoin(self, remove_zones):
+        """Remove a set of zones from the group (including master will delete the group)"""
+        if not remove_zones:
+            return
+        LOG.info(f"Removing zones {remove_zones} from group")
+        # FIXME: implement
+        return

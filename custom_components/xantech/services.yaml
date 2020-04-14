@@ -11,3 +11,20 @@ restore:
     entity_id:
       description: Name(s) of entities that will be restored. Platform dependent.
       example: 'media_player.living_room'
+
+# join:
+#   description: Group zones together so they are controlled by one zone.
+#   fields:
+#     master:
+#       description: Master zone that will coordinate the multi-room group.
+#       example: "media_player.xantech8_home_theater"
+#     entities:
+#       description: Entitie ids of zones (on the same physical amplifer) to join to the master zone.
+#       example: "media_player.xantech8_living_room"
+#
+# unjoin:
+#   description: Unjoin the zone player from a group.
+#   fields:
+#     entities:
+#       description: Entity ids of the zone players to unjoin.
+#       example: "media_player.xantech8_deck"
