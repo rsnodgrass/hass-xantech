@@ -4,7 +4,7 @@ import logging
 
 import voluptuous as vol
 from serial import SerialException
-from pyxantech import get_async_amp_controller, SUPPORTED_AMP_TYPES, BAUD_RATES
+from pyxantech import async_get_amp_controller, SUPPORTED_AMP_TYPES, BAUD_RATES
 
 from homeassistant.components.media_player import PLATFORM_SCHEMA, MediaPlayerDevice
 from homeassistant.components.media_player.const import (
@@ -108,7 +108,7 @@ async def async_setup_platform(hass: HomeAssistantType, config, async_add_entiti
         if not serial_config:
             serial_config = {}
         # FIXME: rename this to async_get_amp_controller()
-        amp = await get_async_amp_controller(amp_type, port, hass.loop, serial_config_overrides=serial_config)
+        amp = await async_get_amp_controller(amp_type, port, hass.loop, serial_config_overrides=serial_config)
 
     except SerialException:
         LOG.error(f"Error connecting to '{amp_type}' amp using {port}, ignoring setup!")
@@ -261,7 +261,7 @@ class ZoneMediaPlayer(MediaPlayerDevice):
         """Restore saved state."""
         if self._status_snapshot:
             await self._amp.restore_zone(self._status_snapshot)
-            #FIXME: self.schedule_update_ha_state(True)
+            self.async_schedule_update_ha_state(force_refresh=True)
             LOG.info(f"Restored previous state for zone {self._zone_id} ({self._name})")
         else:
             LOG.warning(f"Restore service called for zone {self._zone_id} ({self._name}), but no snapshot previously saved.")
@@ -330,6 +330,8 @@ class ZoneMediaPlayer(MediaPlayerDevice):
 
 # For similar implementation details, see:
 #   https://github.com/home-assistant/core/blob/dev/homeassistant/components/snapcast/media_player.py
+# See also grouped from mini media player (which would need some support for this component):
+#   https://github.com/kalkih/mini-media-player#speaker-group-object
 #
 # TODO:
 #  - implementation should only allow a single group at a time (for simplicity)
