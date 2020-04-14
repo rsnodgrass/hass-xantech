@@ -330,9 +330,15 @@ class ZoneMediaPlayer(MediaPlayerDevice):
 
 # For similar implementation details, see:
 #   https://github.com/home-assistant/core/blob/dev/homeassistant/components/snapcast/media_player.py
+#
+# TODO:
+#  - implementation should only allow a single group at a time (for simplicity)
+#  - forward all calls to volume/source select calls to all other peers in the group
+#  - calling any method on a grouped zone that is not a master should do what? ignore? remove from group? apply to all in group?
+#  - should slave group volume adjustments be relative to previous setting or absolutely mirror the master? (downsides to both, but possibly relative is most user friendly)
 
     async def async_join(self, master_zone_id, add_zones):
-        """Grouped several multi-room zones into a group that is controlled and coordinated by a master zone.
+        """Join several zones into a group which is controlled/coordinated by a master zone.
            All volume/mute/source options to the master zone apply to all zones."""
         if not add_zones:
             return
