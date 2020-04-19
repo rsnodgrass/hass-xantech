@@ -154,9 +154,12 @@ class ZoneMediaPlayer(MediaPlayerDevice):
         self._name = zone_name
         self._zone_id = zone_id        
 
+
         # FIXME: since this should be a logical media player...why is it not good enough for the user
         # specified name to represent this?  Other than it could be changed...
         self._unique_id = f"{namespace}_{zone_id}"
+
+        LOG.info("Setting up media player {zone_name} ({zone_id}): {self._unique_id}")
 
         self._status = {}
         self._status_snapshot = None
