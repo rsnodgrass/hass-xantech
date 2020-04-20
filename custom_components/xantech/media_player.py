@@ -156,7 +156,7 @@ class ZoneMediaPlayer(MediaPlayerDevice):
         # specified name to represent this?  Other than it could be changed...
         self._unique_id = f"{namespace}_{zone_id}"
 
-        LOG.info(f"Creating {namesspace} media player for zone {zone_id} ({zone_name}): {self._unique_id}")
+        LOG.info(f"Creating {namespace} media player for zone {zone_id} ({zone_name}): {self._unique_id}")
 
         self._status = {}
         self._status_snapshot = None
