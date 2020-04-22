@@ -1,6 +1,6 @@
 # Xantech Multi-Zone Amplifier Control for Home Assistant
 
-![Xantech Logo](https://github.com/rsnodgrass/hass-anthemav-serial/blob/master/logo.png?raw=true)
+![Xantech Logo](https://github.com/rsnodgrass/hass-xantech/blob/master/logo.png?raw=true)
 
 ![beta_badge](https://img.shields.io/badge/maturity-Beta-yellow.png)
 ![release_badge](https://img.shields.io/github/v/release/rsnodgrass/hass-xantech.svg)
