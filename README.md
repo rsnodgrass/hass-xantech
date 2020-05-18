@@ -22,6 +22,7 @@ See *[pyxantech](https://github.com/rsnodgrass/pyxantech)* for a full list of su
 |              | MX88 / MX88vi            | **8** | YES       | audio + video; vi = Ethernet support (MRIP) |
 |              | MRAUDIO4X4 / BXAUDIO4x4  | 4     | *NO*      | audio only; 4-zone uses different protocol (need RS232 spec) |
 |              | MRC44 / MRC44CTL         | 4     | *NO*      | audio + video; 4-zone uses different protocol (need RS232 spec) |
+|              | ZPR68-10                 | 10    | *NO*      | 10-zone audio |
 |              | CM8X8 / CM8X8DR          | 8     | *MAYBE*   | commercial rack mount matrix controller (BNC) |
 | Monoprice    | MPR-SG6Z / 10761         | 6     | *MAYBE*   | audio only |
 | Dayton Audio | DAX66                    | 6     | *MAYBE*   | audio only |
