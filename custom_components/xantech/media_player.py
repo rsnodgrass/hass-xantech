@@ -143,7 +143,7 @@ async def async_setup_platform(hass: HomeAssistantType, config, async_add_entiti
         hass.services.async_register(DOMAIN, service_call, async_service_call_dispatcher, schema=SERVICE_CALL_SCHEMA)
 
 
-class ZoneMediaPlayer(MediaPlayerDevice):
+class ZoneMediaPlayer(MediaPlayerEntity):
     """Representation of a matrix amplifier zone."""
 
     def __init__(self, namespace, amp, sources, zone_id, zone_name):
