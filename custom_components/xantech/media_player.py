@@ -6,7 +6,7 @@ import voluptuous as vol
 from serial import SerialException
 from pyxantech import async_get_amp_controller, SUPPORTED_AMP_TYPES, BAUD_RATES
 
-from homeassistant.components.media_player import PLATFORM_SCHEMA, MediaPlayerDevice
+from homeassistant.components.media_player import PLATFORM_SCHEMA, MediaPlayerEntity
 from homeassistant.components.media_player.const import (
     SUPPORT_SELECT_SOURCE,
     SUPPORT_TURN_OFF,
