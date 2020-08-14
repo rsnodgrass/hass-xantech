@@ -154,7 +154,7 @@ class ZoneMediaPlayer(MediaPlayerEntity):
 
         # FIXME: since this should be a logical media player...why is it not good enough for the user
         # specified name to represent this?  Other than it could be changed...
-        self._unique_id = f"{namespace}_{zone_id}"
+        self._unique_id = f"{DOMAIN}_{namespace}_{zone_id}"
 
         LOG.info(f"Creating {namespace} media player for zone {zone_id} ({zone_name}): {self._unique_id}")
 
