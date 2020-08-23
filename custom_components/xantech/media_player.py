@@ -27,6 +27,7 @@ from homeassistant.const import (
 )
 from homeassistant.helpers.typing import HomeAssistantType
 from homeassistant.helpers import config_validation as cv, entity_platform, service
+from homeassistant.exceptions import PlatformNotReady
 
 from .const import DOMAIN, SERVICE_RESTORE, SERVICE_SNAPSHOT, SERVICE_JOIN, SERVICE_UNJOIN
 
@@ -114,8 +115,8 @@ async def async_setup_platform(hass: HomeAssistantType, config, async_add_entiti
         amp = await async_get_amp_controller(amp_type, port, hass.loop, serial_config_overrides=serial_config)
 
     except SerialException:
-        LOG.error(f"Error connecting to '{amp_type}' amp using {port}, ignoring setup!")
-        return
+        LOG.error(f"Error connecting to '{amp_type}' amp at {port}")
+        raise PlatformNotReady
 
     sources = {
         source_id: extra[CONF_NAME] for source_id, extra in config[CONF_SOURCES].items()
