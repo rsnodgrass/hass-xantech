@@ -5,6 +5,7 @@ import logging
 import voluptuous as vol
 from serial import SerialException
 from pyxantech import async_get_amp_controller, SUPPORTED_AMP_TYPES, BAUD_RATES
+from ratelimit import limits
 
 from homeassistant.components.media_player import PLATFORM_SCHEMA, MediaPlayerEntity
 from homeassistant.components.media_player.const import (
@@ -96,6 +97,8 @@ SERVICE_CALL_SCHEMA = vol.Schema({ATTR_ENTITY_ID: cv.comp_entity_ids})
 
 MAX_VOLUME = 38 # TODO: remove this and use pyxantech amp type configuration
 
+FIVE_MINUTES = 300
+
 async def async_setup_platform(hass: HomeAssistantType, config, async_add_entities, discovery_info=None):
     """Set up the Xantech amplifier platform."""
     port = config.get(CONF_PORT)
@@ -181,7 +184,11 @@ class ZoneMediaPlayer(MediaPlayerEntity):
             if not status:
                 return
         except Exception as e:
-            LOG.warning(f"Failed updating zone {self._zone_id} ({self._name}): %s", e)
+            # log up to two times within a 5 minute period to avoid saturating the logs
+            @limits(calls=2, period=FIVE_MINUTES)
+            def log_failed_zone_update():
+                LOG.warning(f"Failed updating zone {self._zone_id} ({self._name}): %s", e)
+            log_failed_zone_update()
             return
 
         LOG.debug(f"Zone {self._zone_id} ({self._name}) status update: {status}")
