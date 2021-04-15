@@ -66,6 +66,20 @@ media_player:
         name: "FireTV"
 ```
 
+
+#### Remote IP232 (UNTESTED)
+
+With Home Assistant it is rumored that if you are using a remote IP232 module instead of a
+direct serial onnection that you can specify file paths as *socket://<host>:<port>* in the
+port setting. **This has not been tested.**
+
+```yaml
+media_player:
+  - platform: xantech
+    type: xantech8
+    port: socket://192.168.1.10:888/
+```
+
 #### Lovelace
 
 Example of multiple room volume/power control with a single Spotify source for the entire house (credit: [kcarter13](https://community.home-assistant.io/u/kcarter13/)).
