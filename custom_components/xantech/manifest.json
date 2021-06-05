@@ -1,8 +1,8 @@
 {
   "domain": "xantech",
   "name": "Xantech Multi-Zone Amplifier",
-  "documentation": "https://github.com/rsnodgrass/hass-xantech",
   "version": "0.0.3",
+  "documentation": "https://github.com/rsnodgrass/hass-xantech",
   "requirements": ["pyxantech>=0.5.20", "ratelimit>=2.2.1"],
   "dependencies": [],
   "codeowners": ["@rsnodgrass"]
