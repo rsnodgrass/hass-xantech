@@ -115,7 +115,9 @@ async def async_setup_platform(hass: HomeAssistantType, config, async_add_entiti
         amp = await async_get_amp_controller(amp_type, port, hass.loop, serial_config_overrides=serial_config)
 
         # make a call to ensure communication with amp is possible
-        await amp.zone_status( config[CONF_ZONES][0] )
+        zones = config.get(CONF_ZONES)
+        if zones:
+            await amp.zone_status(zones[0])
 
     except SerialException:
         LOG.error(f"Error connecting to '{amp_type}' amp at {port}")
