@@ -1,5 +1,6 @@
 {
-  "name": "Xantech Multi-Zone Audio Amps",
-  "domains": ["media_player"],
-  "render_readme": true
+    "name": "Xantech Multi-Zone Audio Amps",
+    "domains": ["media_player"],
+    "render_readme": true,
+    "iot_class": ["Local Push"]
 }
