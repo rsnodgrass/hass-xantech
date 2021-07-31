@@ -37,6 +37,12 @@ from .const import DOMAIN, SERVICE_RESTORE, SERVICE_SNAPSHOT, SERVICE_JOIN, SERV
 LOG = logging.getLogger(__name__)
 
 SUPPORTED_AMP_FEATURES = (
+    SUPPORT_TURN_ON
+    | SUPPORT_TURN_OFF
+    | SUPPORT_SELECT_SOURCE
+)
+
+SUPPORTED_ZONE_FEATURES = (
     SUPPORT_VOLUME_MUTE
     | SUPPORT_VOLUME_SET
     | SUPPORT_VOLUME_STEP
@@ -44,6 +50,8 @@ SUPPORTED_AMP_FEATURES = (
     | SUPPORT_TURN_OFF
     | SUPPORT_SELECT_SOURCE
 )
+
+
 
 CONF_SOURCES = "sources"
 CONF_ZONES = "zones"
@@ -171,7 +179,7 @@ class XantechAmplifier(MediaPlayerEntity):
         self._amp = amp
         self._zone_entities = zone_entities
 
-        self._source_id_to_name = sources # [source_id] -> source name
+        self._source_id_to_name = sources                            # [source_id]   -> source name
         self._source_name_to_id = {v: k for k, v in sources.items()} # [source name] -> source_id
 
         # sort list of source names
@@ -206,7 +214,7 @@ class XantechAmplifier(MediaPlayerEntity):
     @property
     def supported_features(self):
         """Return flag of media commands that are supported."""
-        return None
+        return SUPPORTED_AMP_FEATURES
 
     @property
     def source_list(self):
@@ -258,7 +266,7 @@ class ZoneMediaPlayer(MediaPlayerEntity):
         self._status_snapshot = None
         
         self._source = None
-        self._source_id_to_name = sources # [source_id] -> source name
+        self._source_id_to_name = sources                            # [source_id]   -> source name
         self._source_name_to_id = {v: k for k, v in sources.items()} # [source name] -> source_id
 
         # sort list of source names
@@ -340,7 +348,7 @@ class ZoneMediaPlayer(MediaPlayerEntity):
     @property
     def supported_features(self):
         """Return flag of media commands that are supported."""
-        return SUPPORTED_AMP_FEATURES
+        return SUPPORTED_ZONE_FEATURES
 
     @property
     def source(self):
