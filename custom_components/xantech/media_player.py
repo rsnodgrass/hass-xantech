@@ -203,12 +203,12 @@ class XantechAmplifier(MediaPlayerEntity):
 
     @property
     def name(self):
-        """Return the name of the zone."""
+        """Return the amp's name."""
         return self._name
 
     @property
     def state(self):
-        """Return the powered on state of the zone."""
+        """Return the amp's power state."""
         return STATE_UNKNOWN
 
     @property
