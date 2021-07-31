@@ -174,10 +174,10 @@ async def async_setup_platform(hass: HomeAssistantType, config, async_add_entiti
 class XantechAmplifier(MediaPlayerEntity):
     """Representation of the entire matrix amplifier."""
 
-    def __init__(self, namespace, name, amp, sources, zone_entities):
+    def __init__(self, namespace, name, amp, sources, zone_players):
         self._name = name
         self._amp = amp
-        self._zone_entities = zone_entities
+        self._zone_players = zone_players
 
         self._source_id_to_name = sources                            # [source_id]   -> source name
         self._source_name_to_id = {v: k for k, v in sources.items()} # [source name] -> source_id
@@ -193,7 +193,7 @@ class XantechAmplifier(MediaPlayerEntity):
 #        self._unique_id = f"{DOMAIN}_{namespace}_{zone_id}"
 
     async def async_update(self):
-        """Retrieve the latest state."""
+        """Retrieve the latest state from the amp."""
         return
 
 #    @property
@@ -228,7 +228,7 @@ class XantechAmplifier(MediaPlayerEntity):
             return
 
         # set the same source for all zones
-        for zone in self._zone_entities:
+        for zone in self._zone_players:
             await zone.async_select_source(source)
 
     async def async_turn_on(self):
