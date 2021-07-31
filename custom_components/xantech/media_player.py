@@ -1,5 +1,7 @@
 """Home Assistant Media Player for Xantech, Monoprice and Dayton Audio multi-zone amplifiers""" 
 
+# FIXME: Add a MediaPlayer for the entire Xantech unit to enable power on/off, mute, etc all zones
+
 import logging
 
 import voluptuous as vol
@@ -24,6 +26,7 @@ from homeassistant.const import (
     CONF_TYPE,
     STATE_OFF,
     STATE_ON,
+    STATE_UNKNOWN,
 )
 from homeassistant.helpers.typing import HomeAssistantType
 from homeassistant.helpers import config_validation as cv, entity_platform, service
@@ -84,6 +87,7 @@ SERIAL_CONFIG_SCHEMA = vol.Schema({
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
+        vol.Optional(CONF_NAME, default="Xantech House Audio"): cv.string,
         vol.Optional(CONF_TYPE, default="xantech8"): vol.In(SUPPORTED_AMP_TYPES),
         vol.Required(CONF_PORT): cv.string,
         vol.Optional(CONF_ENTITY_NAMESPACE, default="xantech8"): cv.string,
@@ -98,13 +102,16 @@ SERVICE_CALL_SCHEMA = vol.Schema({ATTR_ENTITY_ID: cv.comp_entity_ids})
 
 MAX_VOLUME = 38 # TODO: remove this and use pyxantech amp type configuration
 
-FIVE_MINUTES = 300
+MINUTES = 60
 
 async def async_setup_platform(hass: HomeAssistantType, config, async_add_entities, discovery_info=None):
     """Set up the Xantech amplifier platform."""
     port = config.get(CONF_PORT)
     amp_type = config.get(CONF_TYPE)
     namespace = config.get(CONF_ENTITY_NAMESPACE)
+    entities = []
+    amp = None
+
 
     try:
         # allow manually overriding any of the serial configuration using the 'rs232' key
@@ -115,9 +122,9 @@ async def async_setup_platform(hass: HomeAssistantType, config, async_add_entiti
         amp = await async_get_amp_controller(amp_type, port, hass.loop, serial_config_overrides=serial_config)
 
         # make a call to ensure communication with amp is possible
-        zones = config.get(CONF_ZONES)
-        if zones:
-            await amp.zone_status(zones[0])
+#        zones = config.get(CONF_ZONES)
+#        if zones:
+#            await amp.zone_status(zones[0])
 
     except SerialException:
         LOG.error(f"Error connecting to '{amp_type}' amp at {port}")
@@ -127,10 +134,14 @@ async def async_setup_platform(hass: HomeAssistantType, config, async_add_entiti
         source_id: extra[CONF_NAME] for source_id, extra in config[CONF_SOURCES].items()
     }
 
+
     LOG.info(f"Creating media player for each zone of {amp_type}/{namespace}; sources={sources}")
-    entities = []
     for zone_id, extra in config[CONF_ZONES].items():
         entities.append( ZoneMediaPlayer(namespace, amp, sources, zone_id, extra[CONF_NAME]) )
+
+    # Add the master Media Player for the main control unit, with references to all the zones
+    entities.append( XantechAmplifier(namespace, config.get(CONF_NAME), amp, sources, entities) )
+
     async_add_entities(entities, True)
 
     # setup the service calls
@@ -150,6 +161,82 @@ async def async_setup_platform(hass: HomeAssistantType, config, async_add_entiti
     # register the save/restore snapshot services
     for service_call in [ SERVICE_SNAPSHOT, SERVICE_RESTORE ]:
         hass.services.async_register(DOMAIN, service_call, async_service_call_dispatcher, schema=SERVICE_CALL_SCHEMA)
+
+
+class XantechAmplifier(MediaPlayerEntity):
+    """Representation of the entire matrix amplifier."""
+
+    def __init__(self, namespace, name, amp, sources, zone_entities):
+        self._name = name
+        self._amp = amp
+        self._zone_entities = zone_entities
+
+        self._source_id_to_name = sources # [source_id] -> source name
+        self._source_name_to_id = {v: k for k, v in sources.items()} # [source name] -> source_id
+
+        # sort list of source names
+        self._source_names = sorted(
+            self._source_name_to_id.keys(), key=lambda v: self._source_name_to_id[v]
+        )
+        # TODO: Ideally the source order could be overridden in YAML config (e.g. TV should appear first on list).
+        #       Optionally, we could just sort based on the zone number, and let the user physically wire in the
+        #       order they want (doesn't work for pre-amp out channel 7/8 on some Xantech)
+        
+#        self._unique_id = f"{DOMAIN}_{namespace}_{zone_id}"
+
+    async def async_update(self):
+        """Retrieve the latest state."""
+        return
+
+#    @property
+#    def unique_id(self):
+#        """Return unique ID for this device."""
+#        return self._unique_id
+
+    @property
+    def name(self):
+        """Return the name of the zone."""
+        return self._name
+
+    @property
+    def state(self):
+        """Return the powered on state of the zone."""
+        return STATE_UNKNOWN
+
+    @property
+    def supported_features(self):
+        """Return flag of media commands that are supported."""
+        return None
+
+    @property
+    def source_list(self):
+        """List of available input sources."""
+        return self._source_names
+
+    async def async_select_source(self, source):
+        """Set input source for all zones."""
+        if source not in self._source_name_to_id:
+            LOG.warning(f"Selected source '{source}' not valid for {self._name}, ignoring! Sources: {self._source_name_to_id}")
+            return
+
+        # set the same source for all zones
+        for zone in self._zone_entities:
+            await zone.async_select_source(source)
+
+    async def async_turn_on(self):
+        """Turn the media player on."""
+        LOG.debug(f"Turning ON amp: {self._name}")
+
+    async def async_turn_off(self):
+        """Turn the media player off."""
+        LOG.debug(f"Turning OFF amp: {self._name}")
+
+    @property
+    def icon(self):
+        return 'mdi:speaker'
+
+
+
 
 
 class ZoneMediaPlayer(MediaPlayerEntity):
@@ -190,8 +277,8 @@ class ZoneMediaPlayer(MediaPlayerEntity):
             if not status:
                 return
         except Exception as e:
-            # log up to two times within a 5 minute period to avoid saturating the logs
-            @limits(calls=2, period=FIVE_MINUTES)
+            # log up to two times within a specific period to avoid saturating the logs
+            @limits(calls=2, period=10*MINUTES)
             def log_failed_zone_update():
                 LOG.warning(f"Failed updating zone {self._zone_id} ({self._name}): %s", e)
             log_failed_zone_update()
