@@ -120,7 +120,6 @@ async def async_setup_platform(hass: HomeAssistantType, config, async_add_entiti
     entities = []
     amp = None
 
-
     try:
         # allow manually overriding any of the serial configuration using the 'rs232' key
         serial_config = config.get(CONF_SERIAL_CONFIG)
@@ -142,13 +141,14 @@ async def async_setup_platform(hass: HomeAssistantType, config, async_add_entiti
         source_id: extra[CONF_NAME] for source_id, extra in config[CONF_SOURCES].items()
     }
 
+    amp_name = config.get(CONF_NAME)
 
-    LOG.info(f"Creating media player for each zone of {amp_type}/{namespace}; sources={sources}")
+    LOG.info(f"Creating zone media players for {namespace} '{amp_name}'; sources={sources}")
     for zone_id, extra in config[CONF_ZONES].items():
-        entities.append( ZoneMediaPlayer(namespace, amp, sources, zone_id, extra[CONF_NAME]) )
+        entities.append( ZoneMediaPlayer(namespace, amp_name, amp, sources, zone_id, extra[CONF_NAME]) )
 
     # Add the master Media Player for the main control unit, with references to all the zones
-    entities.append( XantechAmplifier(namespace, config.get(CONF_NAME), amp, sources, entities) )
+    entities.append( XantechAmplifier(namespace, amp_name, amp, sources, entities) )
 
     async_add_entities(entities, True)
 
@@ -190,7 +190,7 @@ class XantechAmplifier(MediaPlayerEntity):
         #       Optionally, we could just sort based on the zone number, and let the user physically wire in the
         #       order they want (doesn't work for pre-amp out channel 7/8 on some Xantech)
         
-#        self._unique_id = f"{DOMAIN}_{namespace}_{zone_id}"
+        self._unique_id = f"{DOMAIN}_{namespace}_{name}".lower().replace(" ", "_")
 
     async def async_update(self):
         """Retrieve the latest state from the amp."""
@@ -250,17 +250,18 @@ class XantechAmplifier(MediaPlayerEntity):
 class ZoneMediaPlayer(MediaPlayerEntity):
     """Representation of a matrix amplifier zone."""
 
-    def __init__(self, namespace, amp, sources, zone_id, zone_name):
+    def __init__(self, namespace, amp_name, amp, sources, zone_id, zone_name):
         """Initialize new zone."""
         self._amp = amp
+        self._amp_name = amp_name
         self._name = zone_name
-        self._zone_id = zone_id        
+        self._zone_id = zone_id
 
         # FIXME: since this should be a logical media player...why is it not good enough for the user
         # specified name to represent this?  Other than it could be changed...
-        self._unique_id = f"{DOMAIN}_{namespace}_{zone_id}"
+        self._unique_id = f"{DOMAIN}_{amp_name}_zone_{zone_id}".lower().replace(" ", "_")
 
-        LOG.info(f"Creating {namespace} media player for zone {zone_id} ({zone_name}): {self._unique_id}")
+        LOG.info(f"Creating {namespace} media player for {amp_name} zone {zone_id} ({zone_name})")
 
         self._status = {}
         self._status_snapshot = None
