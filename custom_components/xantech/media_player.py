@@ -281,7 +281,7 @@ class ZoneMediaPlayer(MediaPlayerEntity):
     async def async_update(self):
         """Retrieve the latest state."""
         try:
-            LOG.debug(f"Attempting to update {self._zone_id} ({self._name})")
+            LOG.debug(f"Updating {self._amp_name} zone {self._zone_id} ({self._name})")
             status = await self._amp.zone_status(self._zone_id)
             if not status:
                 return
