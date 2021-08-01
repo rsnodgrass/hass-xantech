@@ -308,8 +308,8 @@ class ZoneMediaPlayer(MediaPlayerEntity):
                 # sometimes the client may have not configured a source, but if the amplifier is set
                 # to a source other than one defined, go ahead and dynamically create that source. This
                 # could happen if the user changes the source through a different app or command.
-                LOG.warning(f"Invalid source id '{source_id}' specified for zone {self.zone_info}, adding this source!")
                 source_name = f"Source {source_id}"
+                LOG.warning(f"Undefined source id '{source_id}' for zone {self.zone_info}, adding {source_name}!")
                 self._source_id_to_name[source_id] = source_name
                 self._source_name_to_id[source_name] = source_id
 

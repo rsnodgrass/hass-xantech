@@ -3,7 +3,7 @@
   "name": "Xantech Multi-Zone Amps",
   "version": "0.0.6",
   "documentation": "https://github.com/rsnodgrass/hass-xantech",
-  "requirements": ["pyxantech>=0.6.1", "ratelimit>=2.2.1"],
+  "requirements": ["pyxantech>=0.6.2", "ratelimit>=2.2.1"],
   "dependencies": [],
   "codeowners": ["@rsnodgrass"],
   "iot_class": "local_polling"
