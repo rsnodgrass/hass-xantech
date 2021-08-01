@@ -51,8 +51,7 @@ SUPPORTED_ZONE_FEATURES = (
     | SUPPORT_SELECT_SOURCE
 )
 
-
-
+CONF_SERIAL_NUMBER = "serial_number"  # allow for true unique id
 CONF_SOURCES = "sources"
 CONF_ZONES = "zones"
 CONF_DEFAULT_SOURCE = "default_source"
@@ -196,10 +195,10 @@ class XantechAmplifier(MediaPlayerEntity):
         """Retrieve the latest state from the amp."""
         return
 
-#    @property
-#    def unique_id(self):
-#        """Return unique ID for this device."""
-#        return self._unique_id
+    @property
+    def unique_id(self):
+        """Return unique ID for this device."""
+        return self._unique_id
 
     @property
     def name(self):
