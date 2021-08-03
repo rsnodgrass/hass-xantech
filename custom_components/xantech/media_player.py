@@ -260,7 +260,7 @@ class ZoneMediaPlayer(MediaPlayerEntity):
         # specified name to represent this?  Other than it could be changed...
         self._unique_id = f"{DOMAIN}_{amp_name}_zone_{zone_id}".lower().replace(" ", "_")
 
-        LOG.info(f"Creating {amp_name} zone {self.zone_info} media player")
+        LOG.info(f"Creating {self.zone_info} media player")
 
         self._status = {}
         self._status_snapshot = None
@@ -279,12 +279,12 @@ class ZoneMediaPlayer(MediaPlayerEntity):
 
     @property
     def zone_info(self):
-        return f"{self._zone_id} ({self._name})"
+        return f"{self._amp_name} zone {self._zone_id} ({self._name})"
 
     async def async_update(self):
         """Retrieve the latest state."""
         try:
-            LOG.debug(f"Updating {self._amp_name} zone {self.zone_info}")
+            LOG.debug(f"Updating {self.zone_info}")
             status = await self._amp.zone_status(self._zone_id)
             if not status:
                 return
@@ -292,11 +292,11 @@ class ZoneMediaPlayer(MediaPlayerEntity):
             # log up to two times within a specific period to avoid saturating the logs
             @limits(calls=2, period=10*MINUTES)
             def log_failed_zone_update():
-                LOG.warning(f"Failed updating zone {self.zone_info}: %s", e)
+                LOG.warning(f"Failed updating {self.zone_info}: %s", e)
             log_failed_zone_update()
             return
 
-        LOG.debug(f"Zone {self.zone_info} status update: {status}")
+        LOG.debug(f"{self.zone_info} status update: {status}")
         self._status = status
 
         source_id = status.get('source')
@@ -309,7 +309,7 @@ class ZoneMediaPlayer(MediaPlayerEntity):
                 # to a source other than one defined, go ahead and dynamically create that source. This
                 # could happen if the user changes the source through a different app or command.
                 source_name = f"Source {source_id}"
-                LOG.warning(f"Undefined source id '{source_id}' for zone {self.zone_info}, adding {source_name}!")
+                LOG.warning(f"Undefined source id '{source_id}' for {self.zone_info}, adding {source_name}!")
                 self._source_id_to_name[source_id] = source_name
                 self._source_name_to_id[source_name] = source_id
 
@@ -367,30 +367,30 @@ class ZoneMediaPlayer(MediaPlayerEntity):
     async def async_snapshot(self):
         """Save zone's current state."""
         self._status_snapshot = await self._amp.zone_status(self._zone_id)
-        LOG.info(f"Saved state snapshot for zone {self.zone_info}")
+        LOG.info(f"Saved state snapshot for {self.zone_info}")
 
     async def async_restore(self):
         """Restore saved state."""
         if self._status_snapshot:
             await self._amp.restore_zone(self._status_snapshot)
             self.async_schedule_update_ha_state(force_refresh=True)
-            LOG.info(f"Restored previous state for zone {self.zone_info}")
+            LOG.info(f"Restored previous state for {self.zone_info}")
         else:
-            LOG.warning(f"Restore service called for zone {self.zone_info}, but no snapshot previously saved.")
+            LOG.warning(f"Restore service called for {self.zone_info}, but no snapshot previously saved.")
 
     async def async_select_source(self, source):
         """Set input source."""
         if source not in self._source_name_to_id:
-            LOG.warning(f"Selected source '{source}' not valid for zone {self.zone_info}, ignoring! Sources: {self._source_name_to_id}")
+            LOG.warning(f"Selected source '{source}' not valid for {self.zone_info}, ignoring! Sources: {self._source_name_to_id}")
             return
 
         source_id = self._source_name_to_id[source]
-        LOG.info(f"Switching zone {self.zone_info} to source {source_id} ({source})")
+        LOG.info(f"Switching {self.zone_info} to source {source_id} ({source})")
         await self._amp.set_source(self._zone_id, source_id)
 
     async def async_turn_on(self):
         """Turn the media player on."""
-        LOG.debug(f"Turning ON zone {self.zone_info}")
+        LOG.debug(f"Turning ON {self.zone_info}")
         await self._amp.set_power(self._zone_id, True)
 
         # schedule a poll of the status of the zone ASAP to pickup volume levels/etc
@@ -398,7 +398,7 @@ class ZoneMediaPlayer(MediaPlayerEntity):
 
     async def async_turn_off(self):
         """Turn the media player off."""
-        LOG.debug(f"Turning OFF zone {self.zone_info}")
+        LOG.debug(f"Turning OFF {self.zone_info}")
         await self._amp.set_power(self._zone_id, False)
 
     async def async_mute_volume(self, mute):
@@ -456,7 +456,7 @@ class ZoneMediaPlayer(MediaPlayerEntity):
            All volume/mute/source options to the master zone apply to all zones."""
         if not add_zones:
             return
-        LOG.info(f"Adding zones {add_zones} to group")
+        LOG.info(f"Adding {self._amp_name} zones {add_zones} to group")
         # FIXME: implement
         return
 
@@ -464,6 +464,6 @@ class ZoneMediaPlayer(MediaPlayerEntity):
         """Remove a set of zones from the group (including master will delete the group)"""
         if not remove_zones:
             return
-        LOG.info(f"Removing zones {remove_zones} from group")
+        LOG.info(f"Removing {self._amp_name} zones {remove_zones} from group")
         # FIXME: implement
         return
