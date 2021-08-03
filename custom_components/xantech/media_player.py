@@ -309,7 +309,7 @@ class ZoneMediaPlayer(MediaPlayerEntity):
                 # to a source other than one defined, go ahead and dynamically create that source. This
                 # could happen if the user changes the source through a different app or command.
                 source_name = f"Source {source_id}"
-                LOG.warning(f"Undefined source id '{source_id}' for {self.zone_info}, adding {source_name}!")
+                LOG.warning(f"Undefined source id {source_id} for {self.zone_info}, adding '{source_name}'!")
                 self._source_id_to_name[source_id] = source_name
                 self._source_name_to_id[source_name] = source_id
 
