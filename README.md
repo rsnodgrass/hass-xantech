@@ -27,6 +27,7 @@ See *[pyxantech](https://github.com/rsnodgrass/pyxantech)* for a full list of su
 |              | MRC44 / MRC44CTL         |   4   |    *NO*    |    N/A     | audio + video; only supprots IR control          |
 | Monoprice    | MPR-SG6Z / 10761         |   6   | *UNTESTED* | monoprice6 | audio only                                       |
 | Dayton Audio | DAX66                    |   6   | *UNTESTED* | monoprice6 | audio only                                       |
+|              | DAX88                    |   6   |    YES     |   dax88    | audio only                                       |
 | Sonance      | C4630 SE / 875D SE / 875D MKII |  4-6   | *UNTESTED* | sonance | audio only                                       |
 
 
