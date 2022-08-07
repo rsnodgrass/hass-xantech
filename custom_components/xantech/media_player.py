@@ -156,7 +156,7 @@ async def async_setup_platform(hass: HomeAssistantType, config, async_add_entiti
     platform = entity_platform.current_platform.get()
 
     async def async_service_call_dispatcher(service_call):
-        entities = platform.extract_from_service(service_call)
+        entities = await platform.async_extract_from_service(service_call)
         if not entities:
             return
 
