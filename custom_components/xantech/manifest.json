@@ -1,10 +1,15 @@
 {
   "domain": "xantech",
   "name": "Xantech Multi-Zone Amps",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "documentation": "https://github.com/rsnodgrass/hass-xantech",
   "requirements": ["pyxantech>=0.6.6", "ratelimit>=2.2.1"],
   "dependencies": [],
   "codeowners": ["@rsnodgrass"],
-  "iot_class": "local_polling"
+  "iot_class": "local_polling",
+  "supported_brands": {
+      "monoprice": "Monoprice",
+      "daytonaudio": "Dayton Audio",
+      "sonance": "Sonance"
+  }
 }
