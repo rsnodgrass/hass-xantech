@@ -1,4 +1,4 @@
-# Xantech Multi-Zone Amplifier Control for Home Assistant
+# Xantech/Dayton Audio/Sonance Multi-Zone Ampl Control for Home Assistant
 
 ![beta_badge](https://img.shields.io/badge/maturity-Beta-yellow.png)
 ![release_badge](https://img.shields.io/github/v/release/rsnodgrass/hass-xantech.svg)
