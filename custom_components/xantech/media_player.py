@@ -144,7 +144,8 @@ async def async_setup_platform(hass: HomeAssistantType, config, async_add_entiti
 
     LOG.info(f"Creating zone media players for {namespace} '{amp_name}'; sources={sources}")
     for zone_id, extra in config[CONF_ZONES].items():
-        entities.append( ZoneMediaPlayer(namespace, amp_name, amp, sources, zone_id, extra[CONF_NAME]) )
+        entities.append( ZoneMediaPlayer(namespace, amp_name, amp, sources, zone_id,
+                                         extra[CONF_NAME]) )
 
     # Add the master Media Player for the main control unit, with references to all the zones
     entities.append( XantechAmplifier(namespace, amp_name, amp, sources, entities) )
@@ -155,7 +156,7 @@ async def async_setup_platform(hass: HomeAssistantType, config, async_add_entiti
     platform = entity_platform.current_platform.get()
 
     async def async_service_call_dispatcher(service_call):
-        entities = platform.extract_from_service(service_call)
+        entities = await platform.async_extract_from_service(service_call)
         if not entities:
             return
 
@@ -167,7 +168,9 @@ async def async_setup_platform(hass: HomeAssistantType, config, async_add_entiti
 
     # register the save/restore snapshot services
     for service_call in [ SERVICE_SNAPSHOT, SERVICE_RESTORE ]:
-        hass.services.async_register(DOMAIN, service_call, async_service_call_dispatcher, schema=SERVICE_CALL_SCHEMA)
+        hass.services.async_register(DOMAIN, service_call,
+                                     async_service_call_dispatcher,
+                                     schema=SERVICE_CALL_SCHEMA)
 
 
 class XantechAmplifier(MediaPlayerEntity):
@@ -404,7 +407,7 @@ class ZoneMediaPlayer(MediaPlayerEntity):
     async def async_mute_volume(self, mute):
         """Mute (true) or unmute (false) media player."""
         LOG.debug(f"Setting mute={mute} for zone {self.zone_info}")
-        self._amp.set_mute(self._zone_id, mute)
+        await self._amp.set_mute(self._zone_id, mute)
 
     async def async_set_volume_level(self, volume):
         """Set volume level, range 0—1.0"""
