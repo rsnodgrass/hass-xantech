@@ -35,6 +35,10 @@ See *[pyxantech](https://github.com/rsnodgrass/pyxantech)* for a full list of su
 
 * Some Xantech MX88 models only support RS232 control using the DB15 output on the rear. This requiries either Xantech's special DB15 to DB9 adapter cable (PN 05913665), or a custom built DB15 to DB9 cable using the pinouts shown in the MX88 manual.
 
+## Support
+
+Visit the [community support discussion thread](https://community.home-assistant.io/t/xantech-dayton-audio-sonance-multi-zone-amps/450908) for issues with this integration.
+
 ## Installation
 
 If you have trouble with installation and configuration, visit the [Monoprice Home Assistant community discussion](https://community.home-assistant.io/t/monoprice-whole-home-audio-controller-10761-success/19734/62).
@@ -134,6 +138,7 @@ type: entities
 
 ## See Also
 
+* [Community support discussion thread](https://community.home-assistant.io/t/xantech-dayton-audio-sonance-multi-zone-amps/450908)
 * [pyxantech](https://github.com/rsnodgrass/pyxantech)
 * [Home Assistant Monoprice integration](https://www.home-assistant.io/integrations/monoprice/)
 
