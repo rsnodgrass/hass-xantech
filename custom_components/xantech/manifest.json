@@ -3,7 +3,7 @@
   "name": "Xantech/Dayton Audio/Sonance Multi-Zone Amps",
   "version": "0.0.11",
   "documentation": "https://github.com/rsnodgrass/hass-xantech",
-  "requirements": ["pyxantech>=0.6.12", "ratelimit>=2.2.1"],
+  "requirements": ["pyxantech>=0.7.0", "ratelimit>=2.2.1"],
   "dependencies": [],
   "codeowners": [""],
   "iot_class": "local_polling",
