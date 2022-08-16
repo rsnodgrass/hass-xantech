@@ -1,0 +1,306 @@
+button_card_templates:
+  group_players:
+    group_expand: true
+    styles:
+      card:
+        - height: 80px
+    tap_action:
+      action: call-service
+      service: >-
+        [[[ if (entity.state == "on") return "homeassistant.turn_off"; else
+        return "homeassistant.turn_on" ]]]
+      service_data:
+        entity_id: entity
+  sound_mode:
+    group_expand: true
+    styles:
+      card:
+        - height: 80px
+    tap_action:
+      action: call-service
+      service: media_player.volume_set
+      service_data:
+        entity_id: entity
+        volume_level: '[[[ return variables.level ]]]'
+views:
+  - title: Home
+    type: panel
+    cards:
+      - type: vertical-stack
+        cards:
+          - type: horizontal-stack
+            cards:
+              - type: vertical-stack
+                cards:
+                  - type: conditional
+                    conditions:
+                      - entity: input_boolean.spoton
+                        state: 'on'
+                    card:
+                      type: custom:mini-media-player
+                      entity: media_player.spotify_kevin_brown
+                      artwork: full-cover
+                      source: full
+                      sound_mode: full
+                      hide:
+                        volume: true
+                        source: true
+                        power_state: true
+                        icon: true
+                        controls: true
+                        power: true
+                        name: true
+                        info: true
+                        progress: true
+                  - type: conditional
+                    conditions:
+                      - entity: input_boolean.volumion
+                        state: 'on'
+                    card:
+                      type: iframe
+                      url: http://192.168.2.243
+                      aspect_ratio: 150%
+                  - type: conditional
+                    conditions:
+                      - entity: input_boolean.lmusicon
+                        state: 'on'
+                    card:
+                      type: iframe
+                      url: http://192.168.2.245:8321
+                      aspect_ratio: 150%
+                  - type: conditional
+                    conditions:
+                      - entity: input_boolean.pandon
+                        state: 'on'
+                    card:
+                      type: picture-entity
+                      show_state: false
+                      show_name: false
+                      camera_view: auto
+                      entity: sensor.lastfm_coverart_mega
+                      image: https://demo.home-assistant.io/stub_config/bedroom.png
+                      camera_image: camera.pandora_coverart
+                  - type: conditional
+                    conditions:
+                      - entity: input_boolean.mediaextractoron
+                        state: 'on'
+                    card:
+                      type: entities
+                      entities:
+                        - entity: input_text.media_extractor_url
+                          name: Media URL
+                          type: custom:text-input-row
+                  - type: conditional
+                    conditions:
+                      - entity: input_boolean.mediaextractoron
+                        state: 'on'
+                    card:
+                      type: custom:mini-media-player
+                      hide:
+                        volume: true
+                        power: true
+                      source: full
+                      sound_mode: full
+                      replace_mute: play_pause
+                      info: scroll
+                      entity: media_player.dax88_8672
+                      artwork: full-cover
+              - type: vertical-stack
+                cards:
+                  - type: vertical-stack
+                    cards:
+                      - type: conditional
+                        conditions:
+                          - entity: input_boolean.pandon
+                            state: 'off'
+                          - entity: input_boolean.spoton
+                            state: 'off'
+                          - entity: input_boolean.lmusicon
+                            state: 'off'
+                          - entity: input_boolean.volumion
+                            state: 'off'
+                          - entity: input_boolean.airplayon
+                            state: 'off'
+                          - entity: input_boolean.mediaextractoron
+                            state: 'off'
+                        card:
+                          type: markdown
+                          content: >-
+                            No **Music Source** is selected. Please use the
+                            switch to **turn on** a Music Source.
+                      - type: conditional
+                        conditions:
+                          - entity: input_boolean.volumion
+                            state: 'on'
+                        card:
+                          type: custom:mini-media-player
+                          entity: media_player.rcvolumio
+                          group: true
+                          hide:
+                            volume: true
+                            power: true
+                            source: true
+                          sound_mode: full
+                          replace_mute: play_pause
+                          info: scroll
+                      - type: conditional
+                        conditions:
+                          - entity: input_boolean.pandon
+                            state: 'on'
+                        card:
+                          type: custom:mini-media-player
+                          entity: media_player.pandora
+                          group: true
+                          hide:
+                            volume: true
+                            power: true
+                          source: full
+                          sound_mode: full
+                          replace_mute: play_pause
+                          info: scroll
+                      - type: conditional
+                        conditions:
+                          - entity: input_boolean.spoton
+                            state: 'on'
+                        card:
+                          type: custom:mini-media-player
+                          entity: media_player.spotify_kevin_brown
+                          group: true
+                          hide:
+                            volume: true
+                            power: true
+                            source: true
+                          sound_mode: full
+                          replace_mute: play_pause
+                          info: scroll
+                  - type: horizontal-stack
+                    cards:
+                      - type: custom:auto-entities
+                        card:
+                          type: entities
+                          title: Music Sources
+                          show_header_toggle: false
+                          state_color: true
+                        filter:
+                          include:
+                            - entity_id: '*spoton*'
+                              options:
+                                icon: mdi:music
+                            - entity_id: '*pandon*'
+                              options:
+                                icon: mdi:music
+                            - entity_id: '*volumion*'
+                              options:
+                                icon: mdi:music
+                            - entity_id: '*airplayon*'
+                              options:
+                                icon: mdi:music
+                            - entity_id: '*extractoron*'
+                              options:
+                                icon: mdi:music
+                          exclude: []
+                        sort:
+                          method: none
+                      - type: custom:auto-entities
+                        card:
+                          type: entities
+                          title: Speaker Zones
+                          show_header_toggle: false
+                          state_color: true
+                          group: true
+                          hide:
+                            play_pause: true
+                        filter:
+                          include:
+                            - entity_id: media_player.xan*
+                              options:
+                                sourceicon: mdi:music
+                                type: custom:mini-media-player
+                                group: true
+                                hide:
+                                  controls: true
+                                  icon: true
+                                  source: false
+                          exclude:
+                            - entity_id: media_player.xantech8_xantech_house_audio
+                  - type: horizontal-stack
+                    title: Speaker Groups
+                    cards:
+                      - type: custom:button-card
+                        template: group_players
+                        entity: group.dax_party_mode
+                        name: Party
+                      - type: custom:button-card
+                        template: group_players
+                        entity: group.dax_tasting
+                        name: Tasting
+                      - type: custom:button-card
+                        template: group_players
+                        entity: group.dax_backyard
+                        name: Backyard
+                      - type: custom:button-card
+                        template: group_players
+                        entity: group.dax_outside
+                        name: Outside
+                      - type: custom:button-card
+                        template: group_players
+                        entity: group.dax_living
+                        name: Living
+                  - type: horizontal-stack
+                    title: Sound Mode
+                    cards:
+                      - type: custom:button-card
+                        icon: mdi:account-circle
+                        variables:
+                          level: 0.08
+                        template: sound_mode
+                        entity: group.dax_party_mode
+                        name: Conversation
+                      - type: custom:button-card
+                        icon: mdi:volume-low
+                        variables:
+                          level: 0.15
+                        template: sound_mode
+                        entity: group.dax_party_mode
+                        name: Soft
+                      - type: custom:button-card
+                        icon: mdi:volume-medium
+                        variables:
+                          level: 0.25
+                        template: sound_mode
+                        entity: group.dax_party_mode
+                        name: Fun
+                      - type: custom:button-card
+                        icon: mdi:volume-high
+                        variables:
+                          level: 0.5
+                        template: sound_mode
+                        entity: group.dax_party_mode
+                        name: Dance
+                      - type: custom:button-card
+                        icon: mdi:fire-circle
+                        variables:
+                          level: 0.65
+                        template: sound_mode
+                        entity: group.dax_party_mode
+                        name: Blowout
+          - type: vertical-stack
+            cards:
+              - type: conditional
+                conditions:
+                  - entity: input_boolean.spoton
+                    state: 'on'
+                card:
+                  type: custom:spotify-card
+                  spotify_entity: media_player.spotify_kevin_brown
+                  account: default
+                  always_play_random_song: true
+                  grid_show_title: true
+                  grid_covers_per_row: '10'
+                  hide_warning: true
+                  hide_top_header: true
+                  limit: 40
+                  country_code: us
+                  playlist_type: default
+                  display_style: grid
+                  hide_currently_playing: true`
