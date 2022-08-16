@@ -137,6 +137,10 @@ entities:
 type: entities
 ```
 
+## Examples
+
+![xantech_example_from_kbrown01](https://user-images.githubusercontent.com/723363/184977966-33081ba0-7245-43a7-8ea9-618e3f7a9ede.png)
+
 ## See Also
 
 * [Community support discussion thread](https://community.home-assistant.io/t/xantech-dayton-audio-sonance-multi-zone-amps/450908)
