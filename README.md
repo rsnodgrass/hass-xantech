@@ -11,10 +11,13 @@
 
 NOTE: This *MAY* work with Monoprice if you specific the `monoprice6` config type, but `pyxantech` has not been able to be tested with a physical amplifier.
 
-
 ## Support
 
 Visit the [community support discussion thread](https://community.home-assistant.io/t/xantech-dayton-audio-sonance-multi-zone-amps/450908) for issues with this integration. If you have a code change, feel free to submit a PR.
+
+### FEATURES NOT SUPPORTED
+
+* **Snapshot/Restore**: this has never been fully implemented, thus is not supported until someone contributes this code
 
 ## Supported Amplifiers
 
