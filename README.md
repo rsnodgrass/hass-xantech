@@ -9,8 +9,6 @@
 [![Buy Me A Coffee](https://img.shields.io/badge/buy%20me%20a%20coffee-donate-yellow.svg)](https://buymeacoffee.com/DYks67r)
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=WREP29UDAMB6G)
 
-NOTE: This *MAY* work with Monoprice if you specific the `monoprice6` config type, but `pyxantech` has not been able to be tested with a physical amplifier.
-
 ## Support
 
 Visit the [community support discussion thread](https://community.home-assistant.io/t/xantech-dayton-audio-sonance-multi-zone-amps/450908) for issues with this integration. If you have a code change or bug fix, feel free to submit a Pull Request.
@@ -33,15 +31,16 @@ See *[pyxantech](https://github.com/rsnodgrass/pyxantech)* for a full list of su
 |              | ZPR68-10                 |   6   | *UNTESTED* |  zpr68-10  | 6-zone output; 8 source inputs                   |
 |              | MRAUDIO4X4 / BXAUDIO4x4  |   4   |    *NO*    |    N/A     | audio only; only supports IR control             |
 |              | MRC44 / MRC44CTL         |   4   |    *NO*    |    N/A     | audio + video; only supprots IR control          |
-| Monoprice    | MPR-SG6Z / 10761         |   6   | *UNTESTED* | monoprice6 | audio only                                       |
 | Dayton Audio | DAX66                    |   6   | *UNTESTED* | monoprice6 | audio only                                       |
 |              | DAX88                    |  6+2  |    YES     |   dax88    | audio only                                       |
 | Sonance      | C4630 SE / 875D SE / 875D MKII |  4-6   | *UNTESTED* | sonance | audio only                                       |
-
+| Monoprice    | MPR-SG6Z / 10761         |   6   | *UNTESTED* | monoprice6 | audio only                                       |
 
 * The [Monoprice MPR-SG6Z](https://www.monoprice.com/product?p_id=10761) and [Dayton Audio DAX66](https://www.parts-express.com/dayton-audio-dax66-6-source-6-room-distributed-whole-house-audio-system-with-keypads-25-wpc--300-585) appear to have licensed or copied the serial interface from Xantech. Both Monoprice and Dayton Audio use a version of the Xantech multi-zone controller protocol.
 
 * Some Xantech MX88 models only support RS232 control using the DB15 output on the rear. This requiries either Xantech's special DB15 to DB9 adapter cable (PN 05913665), or a custom built DB15 to DB9 cable using the pinouts shown in the MX88 manual.
+
+* This *MAY* work with Monoprice if you specific the `monoprice6` config type, but `pyxantech` has not been able to be tested with a physical amplifier.
 
 ## Installation
 
