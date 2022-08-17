@@ -13,7 +13,7 @@ NOTE: This *MAY* work with Monoprice if you specific the `monoprice6` config typ
 
 ## Support
 
-Visit the [community support discussion thread](https://community.home-assistant.io/t/xantech-dayton-audio-sonance-multi-zone-amps/450908) for issues with this integration. If you have a code change, feel free to submit a PR.
+Visit the [community support discussion thread](https://community.home-assistant.io/t/xantech-dayton-audio-sonance-multi-zone-amps/450908) for issues with this integration. If you have a code change or bug fix, feel free to submit a Pull Request.
 
 ### FEATURES NOT SUPPORTED
 
