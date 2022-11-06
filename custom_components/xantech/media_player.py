@@ -1,4 +1,4 @@
-"""Home Assistant Media Player for Xantech, Monoprice and Dayton Audio multi-zone amplifiers""" 
+"""Home Assistant Media Player for Xantech, Monoprice and Dayton Audio multi-zone amplifiers"""
 
 # FIXME: Add a MediaPlayer for the entire Xantech unit to enable power on/off, mute, etc all zones
 
@@ -32,15 +32,17 @@ from homeassistant.helpers.typing import HomeAssistantType
 from homeassistant.helpers import config_validation as cv, entity_platform, service
 from homeassistant.exceptions import PlatformNotReady
 
-from .const import DOMAIN, SERVICE_RESTORE, SERVICE_SNAPSHOT, SERVICE_JOIN, SERVICE_UNJOIN
+from .const import (
+    DOMAIN,
+    SERVICE_RESTORE,
+    SERVICE_SNAPSHOT,
+    SERVICE_JOIN,
+    SERVICE_UNJOIN,
+)
 
 LOG = logging.getLogger(__name__)
 
-SUPPORTED_AMP_FEATURES = (
-    SUPPORT_TURN_ON
-    | SUPPORT_TURN_OFF
-    | SUPPORT_SELECT_SOURCE
-)
+SUPPORTED_AMP_FEATURES = SUPPORT_TURN_ON | SUPPORT_TURN_OFF | SUPPORT_SELECT_SOURCE
 
 SUPPORTED_ZONE_FEATURES = (
     SUPPORT_VOLUME_MUTE
@@ -57,19 +59,19 @@ CONF_ZONES = "zones"
 CONF_DEFAULT_SOURCE = "default_source"
 CONF_SERIAL_CONFIG = "rs232"
 
-# Valid source ids: 
+# Valid source ids:
 #    monoprice6: 1-6 (Monoprice and Dayton Audio)
 #    xantech8:   1-8
 SOURCE_IDS = vol.All(vol.Coerce(int), vol.Range(min=1, max=8))
-SOURCE_SCHEMA = vol.Schema({
-    vol.Required(CONF_NAME, default="Unknown Source"): cv.string}
+SOURCE_SCHEMA = vol.Schema(
+    {vol.Required(CONF_NAME, default="Unknown Source"): cv.string}
 )
 
 # TODO: this should come from config for each model...from underlying pyxantech, which
 # probably requires checking at runtime (plus a failure in one zone id shouldn't fail
 # ALL the zones from being created)
 #
-# Valid zone ids: 
+# Valid zone ids:
 #   monoprice6: 11-16 or 21-26 or 31-36 (Monoprice and Dayton Audio)
 #   xantech8:   11-18 or 21-28 or 31-38 or 1-8
 ZONE_IDS = vol.All(
@@ -78,19 +80,23 @@ ZONE_IDS = vol.All(
         vol.Range(min=1, max=8),
         vol.Range(min=11, max=18),
         vol.Range(min=21, max=28),
-        vol.Range(min=31, max=38)
+        vol.Range(min=31, max=38),
     ),
 )
-ZONE_SCHEMA = vol.Schema({
-    vol.Required(CONF_NAME, default="Audio Zone"): cv.string,
-    vol.Optional(CONF_DEFAULT_SOURCE): cv.positive_int
-})
+ZONE_SCHEMA = vol.Schema(
+    {
+        vol.Required(CONF_NAME, default="Audio Zone"): cv.string,
+        vol.Optional(CONF_DEFAULT_SOURCE): cv.positive_int,
+    }
+)
 
-SERIAL_CONFIG_SCHEMA = vol.Schema({
-    vol.Optional("baudrate"): vol.In(BAUD_RATES),
-    vol.Optional("timeout"): cv.small_float,
-    vol.Optional("write_timeout"): cv.small_float
-})
+SERIAL_CONFIG_SCHEMA = vol.Schema(
+    {
+        vol.Optional("baudrate"): vol.In(BAUD_RATES),
+        vol.Optional("timeout"): cv.small_float,
+        vol.Optional("write_timeout"): cv.small_float,
+    }
+)
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
@@ -100,18 +106,21 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
         vol.Optional(CONF_ENTITY_NAMESPACE, default="xantech8"): cv.string,
         vol.Required(CONF_ZONES): vol.Schema({ZONE_IDS: ZONE_SCHEMA}),
         vol.Required(CONF_SOURCES): vol.Schema({SOURCE_IDS: SOURCE_SCHEMA}),
-        vol.Optional(CONF_SERIAL_CONFIG): SERIAL_CONFIG_SCHEMA
+        vol.Optional(CONF_SERIAL_CONFIG): SERIAL_CONFIG_SCHEMA,
     }
 )
 
 # schema for media player service calls
 SERVICE_CALL_SCHEMA = vol.Schema({ATTR_ENTITY_ID: cv.comp_entity_ids})
 
-MAX_VOLUME = 38 # TODO: remove this and use pyxantech amp type configuration
+MAX_VOLUME = 38  # TODO: remove this and use pyxantech amp type configuration
 
 MINUTES = 60
 
-async def async_setup_platform(hass: HomeAssistantType, config, async_add_entities, discovery_info=None):
+
+async def async_setup_platform(
+    hass: HomeAssistantType, config, async_add_entities, discovery_info=None
+):
     """Set up the Xantech amplifier platform."""
     port = config.get(CONF_PORT)
     amp_type = config.get(CONF_TYPE)
@@ -125,12 +134,14 @@ async def async_setup_platform(hass: HomeAssistantType, config, async_add_entiti
         if not serial_config:
             serial_config = {}
         # FIXME: rename this to async_get_amp_controller()
-        amp = await async_get_amp_controller(amp_type, port, hass.loop, serial_config_overrides=serial_config)
+        amp = await async_get_amp_controller(
+            amp_type, port, hass.loop, serial_config_overrides=serial_config
+        )
 
         # make a call to ensure communication with amp is possible
-#        zones = config.get(CONF_ZONES)
-#        if zones:
-#            await amp.zone_status(zones[0])
+    #        zones = config.get(CONF_ZONES)
+    #        if zones:
+    #            await amp.zone_status(zones[0])
 
     except SerialException:
         LOG.error(f"Error connecting to '{amp_type}' amp at {port}")
@@ -142,13 +153,18 @@ async def async_setup_platform(hass: HomeAssistantType, config, async_add_entiti
 
     amp_name = config.get(CONF_NAME)
 
-    LOG.info(f"Creating zone media players for {namespace} '{amp_name}'; sources={sources}")
+    LOG.info(
+        f"Creating zone media players for {namespace} '{amp_name}'; sources={sources}"
+    )
     for zone_id, extra in config[CONF_ZONES].items():
-        entities.append( ZoneMediaPlayer(namespace, amp_name, amp, sources, zone_id,
-                                         extra[CONF_NAME]) )
+        entities.append(
+            ZoneMediaPlayer(
+                namespace, amp_name, amp, sources, zone_id, extra[CONF_NAME]
+            )
+        )
 
     # Add the master Media Player for the main control unit, with references to all the zones
-    entities.append( XantechAmplifier(namespace, amp_name, amp, sources, entities) )
+    entities.append(XantechAmplifier(namespace, amp_name, amp, sources, entities))
 
     async_add_entities(entities, True)
 
@@ -167,10 +183,13 @@ async def async_setup_platform(hass: HomeAssistantType, config, async_add_entiti
                 await entity.async_restore()
 
     # register the save/restore snapshot services
-    for service_call in [ SERVICE_SNAPSHOT, SERVICE_RESTORE ]:
-        hass.services.async_register(DOMAIN, service_call,
-                                     async_service_call_dispatcher,
-                                     schema=SERVICE_CALL_SCHEMA)
+    for service_call in [SERVICE_SNAPSHOT, SERVICE_RESTORE]:
+        hass.services.async_register(
+            DOMAIN,
+            service_call,
+            async_service_call_dispatcher,
+            schema=SERVICE_CALL_SCHEMA,
+        )
 
 
 class XantechAmplifier(MediaPlayerEntity):
@@ -181,8 +200,10 @@ class XantechAmplifier(MediaPlayerEntity):
         self._amp = amp
         self._zone_players = zone_players
 
-        self._source_id_to_name = sources                            # [source_id]   -> source name
-        self._source_name_to_id = {v: k for k, v in sources.items()} # [source name] -> source_id
+        self._source_id_to_name = sources  # [source_id]   -> source name
+        self._source_name_to_id = {
+            v: k for k, v in sources.items()
+        }  # [source name] -> source_id
 
         # sort list of source names
         self._source_names = sorted(
@@ -191,7 +212,7 @@ class XantechAmplifier(MediaPlayerEntity):
         # TODO: Ideally the source order could be overridden in YAML config (e.g. TV should appear first on list).
         #       Optionally, we could just sort based on the zone number, and let the user physically wire in the
         #       order they want (doesn't work for pre-amp out channel 7/8 on some Xantech)
-        
+
         self._unique_id = f"{DOMAIN}_{namespace}_{name}".lower().replace(" ", "_")
 
     async def async_update(self):
@@ -226,7 +247,9 @@ class XantechAmplifier(MediaPlayerEntity):
     async def async_select_source(self, source):
         """Set input source for all zones."""
         if source not in self._source_name_to_id:
-            LOG.warning(f"Selected source '{source}' not valid for {self._name}, ignoring! Sources: {self._source_name_to_id}")
+            LOG.warning(
+                f"Selected source '{source}' not valid for {self._name}, ignoring! Sources: {self._source_name_to_id}"
+            )
             return
 
         # set the same source for all zones
@@ -243,10 +266,7 @@ class XantechAmplifier(MediaPlayerEntity):
 
     @property
     def icon(self):
-        return 'mdi:speaker'
-
-
-
+        return "mdi:speaker"
 
 
 class ZoneMediaPlayer(MediaPlayerEntity):
@@ -261,16 +281,20 @@ class ZoneMediaPlayer(MediaPlayerEntity):
 
         # FIXME: since this should be a logical media player...why is it not good enough for the user
         # specified name to represent this?  Other than it could be changed...
-        self._unique_id = f"{DOMAIN}_{amp_name}_zone_{zone_id}".lower().replace(" ", "_")
+        self._unique_id = f"{DOMAIN}_{amp_name}_zone_{zone_id}".lower().replace(
+            " ", "_"
+        )
 
         LOG.info(f"Creating {self.zone_info} media player")
 
         self._status = {}
         self._status_snapshot = None
-        
+
         self._source = None
-        self._source_id_to_name = sources                            # [source_id]   -> source name
-        self._source_name_to_id = {v: k for k, v in sources.items()} # [source name] -> source_id
+        self._source_id_to_name = sources  # [source_id]   -> source name
+        self._source_name_to_id = {
+            v: k for k, v in sources.items()
+        }  # [source name] -> source_id
 
         # sort list of source names
         self._source_names = sorted(
@@ -293,26 +317,29 @@ class ZoneMediaPlayer(MediaPlayerEntity):
                 return
         except Exception as e:
             # log up to two times within a specific period to avoid saturating the logs
-            @limits(calls=2, period=10*MINUTES)
+            @limits(calls=2, period=10 * MINUTES)
             def log_failed_zone_update():
                 LOG.warning(f"Failed updating {self.zone_info}: %s", e)
+
             log_failed_zone_update()
             return
 
         LOG.debug(f"{self.zone_info} status update: {status}")
         self._status = status
 
-        source_id = status.get('source')
+        source_id = status.get("source")
         if source_id:
             source_name = self._source_id_to_name.get(source_id)
-            if source_name: 
+            if source_name:
                 self._source = source_name
             else:
                 # sometimes the client may have not configured a source, but if the amplifier is set
                 # to a source other than one defined, go ahead and dynamically create that source. This
                 # could happen if the user changes the source through a different app or command.
                 source_name = f"Source {source_id}"
-                LOG.warning(f"Undefined source id {source_id} for {self.zone_info}, adding '{source_name}'!")
+                LOG.warning(
+                    f"Undefined source id {source_id} for {self.zone_info}, adding '{source_name}'!"
+                )
                 self._source_id_to_name[source_id] = source_name
                 self._source_name_to_id[source_name] = source_id
 
@@ -329,7 +356,7 @@ class ZoneMediaPlayer(MediaPlayerEntity):
     @property
     def state(self):
         """Return the powered on state of the zone."""
-        power = self._status.get('power')
+        power = self._status.get("power")
         if power is not None and power == True:
             return STATE_ON
         else:
@@ -338,7 +365,7 @@ class ZoneMediaPlayer(MediaPlayerEntity):
     @property
     def volume_level(self):
         """Volume level of the media player (0..1)."""
-        volume = self._status.get('volume')
+        volume = self._status.get("volume")
         if volume is None:
             return None
         return volume / MAX_VOLUME
@@ -347,7 +374,7 @@ class ZoneMediaPlayer(MediaPlayerEntity):
     def is_volume_muted(self):
         """Boolean if volume is currently muted."""
         # FIXME: what about when volume == 0?
-        mute = self._status.get('mute')
+        mute = self._status.get("mute")
         if mute is None:
             mute = False
         return mute
@@ -379,12 +406,16 @@ class ZoneMediaPlayer(MediaPlayerEntity):
             self.async_schedule_update_ha_state(force_refresh=True)
             LOG.info(f"Restored previous state for {self.zone_info}")
         else:
-            LOG.warning(f"Restore service called for {self.zone_info}, but no snapshot previously saved.")
+            LOG.warning(
+                f"Restore service called for {self.zone_info}, but no snapshot previously saved."
+            )
 
     async def async_select_source(self, source):
         """Set input source."""
         if source not in self._source_name_to_id:
-            LOG.warning(f"Selected source '{source}' not valid for {self.zone_info}, ignoring! Sources: {self._source_name_to_id}")
+            LOG.warning(
+                f"Selected source '{source}' not valid for {self.zone_info}, ignoring! Sources: {self._source_name_to_id}"
+            )
             return
 
         source_id = self._source_name_to_id[source]
@@ -412,12 +443,14 @@ class ZoneMediaPlayer(MediaPlayerEntity):
     async def async_set_volume_level(self, volume):
         """Set volume level, range 0—1.0"""
         amp_volume = int(volume * MAX_VOLUME)
-        LOG.debug(f"Setting zone {self.zone_info} volume to {amp_volume} (HA volume {volume}")
+        LOG.debug(
+            f"Setting zone {self.zone_info} volume to {amp_volume} (HA volume {volume}"
+        )
         await self._amp.set_volume(self._zone_id, amp_volume)
 
     async def async_volume_up(self):
         """Volume up the media player."""
-        volume = self._status.get('volume')
+        volume = self._status.get("volume")
         if volume is None:
             return
 
@@ -427,7 +460,7 @@ class ZoneMediaPlayer(MediaPlayerEntity):
 
     async def async_volume_down(self):
         """Volume down media player."""
-        volume = self._status.get('volume')
+        volume = self._status.get("volume")
         if volume is None:
             return
 
@@ -438,25 +471,24 @@ class ZoneMediaPlayer(MediaPlayerEntity):
     @property
     def icon(self):
         if self.state == STATE_OFF or self.is_volume_muted:
-            return 'mdi:speaker-off'
+            return "mdi:speaker-off"
         else:
-            return 'mdi:speaker'
+            return "mdi:speaker"
 
-
-# For similar implementation details, see:
-#   https://github.com/home-assistant/core/blob/dev/homeassistant/components/snapcast/media_player.py
-# See also grouped from mini media player (which would need some support for this component):
-#   https://github.com/kalkih/mini-media-player#speaker-group-object
-#
-# TODO:
-#  - implementation should only allow a single group at a time (for simplicity)
-#  - forward all calls to volume/source select calls to all other peers in the group
-#  - calling any method on a grouped zone that is not a master should do what? ignore? remove from group? apply to all in group?
-#  - should slave group volume adjustments be relative to previous setting or absolutely mirror the master? (downsides to both, but possibly relative is most user friendly)
+    # For similar implementation details, see:
+    #   https://github.com/home-assistant/core/blob/dev/homeassistant/components/snapcast/media_player.py
+    # See also grouped from mini media player (which would need some support for this component):
+    #   https://github.com/kalkih/mini-media-player#speaker-group-object
+    #
+    # TODO:
+    #  - implementation should only allow a single group at a time (for simplicity)
+    #  - forward all calls to volume/source select calls to all other peers in the group
+    #  - calling any method on a grouped zone that is not a master should do what? ignore? remove from group? apply to all in group?
+    #  - should slave group volume adjustments be relative to previous setting or absolutely mirror the master? (downsides to both, but possibly relative is most user friendly)
 
     async def async_join(self, master_zone_id, add_zones):
         """Join several zones into a group which is controlled/coordinated by a master zone.
-           All volume/mute/source options to the master zone apply to all zones."""
+        All volume/mute/source options to the master zone apply to all zones."""
         if not add_zones:
             return
         LOG.info(f"Adding {self._amp_name} zones {add_zones} to group")

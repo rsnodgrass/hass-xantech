@@ -6,16 +6,15 @@ import voluptuous as vol
 from homeassistant import config_entries, core
 from homeassistant.const import CONF_TIMEOUT
 
-from .const import DOMAIN, CONF_TTY  # pylint:disable=unused-import; pylint:disable=unused-import
+from .const import (
+    DOMAIN,
+    CONF_TTY,
+)  # pylint:disable=unused-import; pylint:disable=unused-import
 
 LOG = logging.getLogger(__name__)
 
-DATA_SCHEMA = vol.Schema(
-    {
-        vol.Required(CONF_TTY): str,
-        vol.Optional(CONF_TIMEOUT): str
-    }
-)
+DATA_SCHEMA = vol.Schema({vol.Required(CONF_TTY): str, vol.Optional(CONF_TIMEOUT): str})
+
 
 async def validate_input(hass: core.HomeAssistant, data):
     """Validate the user input allows us to connect.
@@ -23,7 +22,7 @@ async def validate_input(hass: core.HomeAssistant, data):
     """
 
     # Return info that you want to store in the config entry.
-    return {"title": data[CONF_TTY]} # FIXME
+    return {"title": data[CONF_TTY]}  # FIXME
 
 
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
