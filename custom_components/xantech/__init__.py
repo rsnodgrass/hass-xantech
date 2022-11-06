@@ -9,6 +9,7 @@ from .const import DOMAIN
 
 PLATFORMS = ["media_player"]
 
+
 async def async_setup(hass: HomeAssistant, config: dict):
     """Set up the Xantech Multi-Zone Amplifier component."""
     return True
