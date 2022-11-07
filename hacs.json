@@ -1,5 +1,4 @@
 {
     "name": "Xantech/Dayton Audio/Sonance Multi-Zone Amp",
-    "domains": ["media_player"],
     "render_readme": true
 }
