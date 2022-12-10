@@ -183,7 +183,7 @@ async def async_setup_platform(
                 await entity.async_restore()
 
     # register the save/restore snapshot services
-    for service_call in [SERVICE_SNAPSHOT, SERVICE_RESTORE]:
+    for service_call in (SERVICE_SNAPSHOT, SERVICE_RESTORE):
         hass.services.async_register(
             DOMAIN,
             service_call,
@@ -217,6 +217,7 @@ class XantechAmplifier(MediaPlayerEntity):
 
     async def async_update(self):
         """Retrieve the latest state from the amp."""
+        LOG.debug("async_update() is empty")
         return
 
     @property
@@ -472,8 +473,7 @@ class ZoneMediaPlayer(MediaPlayerEntity):
     def icon(self):
         if self.state == STATE_OFF or self.is_volume_muted:
             return "mdi:speaker-off"
-        else:
-            return "mdi:speaker"
+        return "mdi:speaker"
 
     # For similar implementation details, see:
     #   https://github.com/home-assistant/core/blob/dev/homeassistant/components/snapcast/media_player.py
@@ -493,7 +493,6 @@ class ZoneMediaPlayer(MediaPlayerEntity):
             return
         LOG.info(f"Adding {self._amp_name} zones {add_zones} to group")
         # FIXME: implement
-        return
 
     async def async_unjoin(self, remove_zones):
         """Remove a set of zones from the group (including master will delete the group)"""
@@ -501,4 +500,3 @@ class ZoneMediaPlayer(MediaPlayerEntity):
             return
         LOG.info(f"Removing {self._amp_name} zones {remove_zones} from group")
         # FIXME: implement
-        return
