@@ -32,6 +32,7 @@ See *[pyxantech](https://github.com/rsnodgrass/pyxantech)* for a full list of su
 |              | DAX88                    |  6+2  |    YES     |   dax88    | audio only                                       |
 | Sonance      | C4630 SE / 875D SE / 875D MKII |  4-6   | *UNTESTED* | sonance | audio only                                       |
 | Monoprice    | MPR-SG6Z / 10761         |   6   | *UNTESTED* | monoprice6 | audio only                                       |
+| Soundavo     | WS66i                    |   6   | *UNTESTED* | monoprice6 | audio only; see pyws66i; does not support telnet/IP control (yet) |
 
 * The [Monoprice MPR-SG6Z](https://www.monoprice.com/product?p_id=10761) and [Dayton Audio DAX66](https://www.parts-express.com/dayton-audio-dax66-6-source-6-room-distributed-whole-house-audio-system-with-keypads-25-wpc--300-585) appear to have licensed or copied the serial interface from Xantech. Both Monoprice and Dayton Audio use a version of the Xantech multi-zone controller protocol.
 
