@@ -319,10 +319,10 @@ class ZoneMediaPlayer(MediaPlayerEntity):
         except Exception as e:
             # log up to two times within a specific period to avoid saturating the logs
             @limits(calls=2, period=10 * MINUTES)
-            def log_failed_zone_update():
-                LOG.warning(f"Failed updating {self.zone_info}: %s", e)
+            def log_failed_zone_update(e):
+                LOG.warning(f"Failed updating {self.zone_info}: {e}")
 
-            log_failed_zone_update()
+            log_failed_zone_update(e)
             return
 
         LOG.debug(f"{self.zone_info} status update: {status}")
@@ -358,7 +358,7 @@ class ZoneMediaPlayer(MediaPlayerEntity):
     def state(self):
         """Return the powered on state of the zone."""
         power = self._status.get("power")
-        if power is not None and power == True:
+        if power is not None and power is True:
             return STATE_ON
         else:
             return STATE_OFF
