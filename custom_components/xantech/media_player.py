@@ -5,10 +5,6 @@
 import logging
 
 import voluptuous as vol
-from serial import SerialException
-from pyxantech import async_get_amp_controller, SUPPORTED_AMP_TYPES, BAUD_RATES
-from ratelimit import limits
-
 from homeassistant.components.media_player import PLATFORM_SCHEMA, MediaPlayerEntity
 from homeassistant.components.media_player.const import (
     SUPPORT_SELECT_SOURCE,
@@ -28,15 +24,19 @@ from homeassistant.const import (
     STATE_ON,
     STATE_UNKNOWN,
 )
-from homeassistant.helpers.typing import HomeAssistantType
-from homeassistant.helpers import config_validation as cv, entity_platform, service
 from homeassistant.exceptions import PlatformNotReady
+from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers import entity_platform, service
+from homeassistant.helpers.typing import HomeAssistantType
+from pyxantech import BAUD_RATES, SUPPORTED_AMP_TYPES, async_get_amp_controller
+from ratelimit import limits
+from serial import SerialException
 
 from .const import (
     DOMAIN,
+    SERVICE_JOIN,
     SERVICE_RESTORE,
     SERVICE_SNAPSHOT,
-    SERVICE_JOIN,
     SERVICE_UNJOIN,
 )
 

@@ -2,14 +2,13 @@
 import logging
 
 import voluptuous as vol
-
 from homeassistant import config_entries, core
 from homeassistant.const import CONF_TIMEOUT
 
-from .const import (
-    DOMAIN,
+from .const import (  # pylint:disable=unused-import; pylint:disable=unused-import
     CONF_TTY,
-)  # pylint:disable=unused-import; pylint:disable=unused-import
+    DOMAIN,
+)
 
 LOG = logging.getLogger(__name__)
 
