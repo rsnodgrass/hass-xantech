@@ -6,6 +6,7 @@ from homeassistant import config_entries, core
 from homeassistant.const import CONF_TIMEOUT
 
 from .const import (  # pylint:disable=unused-import; pylint:disable=unused-import
+    CONF_EMAIL,
     CONF_TTY,
     DOMAIN,
 )
