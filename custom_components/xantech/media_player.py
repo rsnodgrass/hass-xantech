@@ -26,7 +26,7 @@ from homeassistant.const import (
 )
 from homeassistant.exceptions import PlatformNotReady
 from homeassistant.helpers import config_validation as cv
-from homeassistant.helpers import entity_platform, service
+from homeassistant.helpers import entity_platform
 from homeassistant.helpers.typing import HomeAssistantType
 from pyxantech import BAUD_RATES, SUPPORTED_AMP_TYPES, async_get_amp_controller
 from ratelimit import limits
