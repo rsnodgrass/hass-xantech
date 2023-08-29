@@ -5,6 +5,10 @@
 import logging
 
 import voluptuous as vol
+from serial import SerialException
+from pyxantech import async_get_amp_controller, SUPPORTED_AMP_TYPES, BAUD_RATES
+from ratelimit import limits
+
 from homeassistant.components.media_player import PLATFORM_SCHEMA, MediaPlayerEntity
 from homeassistant.components.media_player.const import (
     SUPPORT_SELECT_SOURCE,
@@ -24,13 +28,9 @@ from homeassistant.const import (
     STATE_ON,
     STATE_UNKNOWN,
 )
-from homeassistant.exceptions import PlatformNotReady
-from homeassistant.helpers import config_validation as cv
-from homeassistant.helpers import entity_platform
 from homeassistant.helpers.typing import HomeAssistantType
-from pyxantech import BAUD_RATES, SUPPORTED_AMP_TYPES, async_get_amp_controller
-from ratelimit import limits
-from serial import SerialException
+from homeassistant.helpers import config_validation as cv, entity_platform, service
+from homeassistant.exceptions import PlatformNotReady
 
 from .const import (
     DOMAIN,
@@ -38,6 +38,12 @@ from .const import (
     SERVICE_RESTORE,
     SERVICE_SNAPSHOT,
     SERVICE_UNJOIN,
+    SERVICE_SET_BALANCE,
+    SERVICE_SET_BASS,
+    SERVICE_SET_TREBLE,
+    ATTR_BALANCE,
+    ATTR_BASS,
+    ATTR_TREBLE,
 )
 
 LOG = logging.getLogger(__name__)
@@ -53,25 +59,47 @@ SUPPORTED_ZONE_FEATURES = (
     | SUPPORT_SELECT_SOURCE
 )
 
+SET_BALANCE_SCHEMA = vol.Schema(
+    {
+        vol.Optional("entity_id", default=[]): vol.All(cv.ensure_list, [cv.string]),
+        vol.Optional(ATTR_BALANCE, default=10): vol.All(int, vol.Range(min=0, max=20))
+    }
+)
+
+SET_BASS_SCHEMA = vol.Schema(
+    {
+        vol.Optional("entity_id", default=[]): vol.All(cv.ensure_list, [cv.string]),
+        vol.Optional(ATTR_BASS, default=12): vol.All(int, vol.Range(min=0, max=24))
+    }
+)
+
+SET_TREBLE_SCHEMA = vol.Schema(
+    {
+        vol.Optional("entity_id", default=[]): vol.All(cv.ensure_list, [cv.string]),
+        vol.Optional(ATTR_TREBLE, default=12): vol.All(int, vol.Range(min=0, max=24))
+    }
+)
+
+
 CONF_SERIAL_NUMBER = "serial_number"  # allow for true unique id
 CONF_SOURCES = "sources"
 CONF_ZONES = "zones"
 CONF_DEFAULT_SOURCE = "default_source"
 CONF_SERIAL_CONFIG = "rs232"
 
-# Valid source ids:
+# Valid source ids: 
 #    monoprice6: 1-6 (Monoprice and Dayton Audio)
 #    xantech8:   1-8
 SOURCE_IDS = vol.All(vol.Coerce(int), vol.Range(min=1, max=8))
-SOURCE_SCHEMA = vol.Schema(
-    {vol.Required(CONF_NAME, default="Unknown Source"): cv.string}
+SOURCE_SCHEMA = vol.Schema({
+    vol.Required(CONF_NAME, default="Unknown Source"): cv.string}
 )
 
 # TODO: this should come from config for each model...from underlying pyxantech, which
 # probably requires checking at runtime (plus a failure in one zone id shouldn't fail
 # ALL the zones from being created)
 #
-# Valid zone ids:
+# Valid zone ids: 
 #   monoprice6: 11-16 or 21-26 or 31-36 (Monoprice and Dayton Audio)
 #   xantech8:   11-18 or 21-28 or 31-38 or 1-8
 ZONE_IDS = vol.All(
@@ -181,7 +209,13 @@ async def async_setup_platform(
                 await entity.async_snapshot()
             elif service_call.service == SERVICE_RESTORE:
                 await entity.async_restore()
-
+            elif service_call.service == SERVICE_SET_BALANCE:
+                await entity.async_set_balance(service_call)
+            elif service_call.service == SERVICE_SET_BASS:
+                await entity.async_set_bass(service_call)
+            elif service_call.service == SERVICE_SET_TREBLE:
+                await entity.async_set_treble(service_call)
+                
     # register the save/restore snapshot services
     for service_call in (SERVICE_SNAPSHOT, SERVICE_RESTORE):
         hass.services.async_register(
@@ -190,6 +224,27 @@ async def async_setup_platform(
             async_service_call_dispatcher,
             schema=SERVICE_CALL_SCHEMA,
         )
+    # register the set balance, treble, bass services
+    hass.services.async_register(
+        DOMAIN,
+        SERVICE_SET_BALANCE,
+        async_service_call_dispatcher,
+        schema=SET_BALANCE_SCHEMA,
+    )
+
+    hass.services.async_register(
+        DOMAIN,
+        SERVICE_SET_BASS,
+        async_service_call_dispatcher,
+        schema=SET_BASS_SCHEMA,
+    )
+
+    hass.services.async_register(
+        DOMAIN,
+        SERVICE_SET_TREBLE,
+        async_service_call_dispatcher,
+        schema=SET_TREBLE_SCHEMA,
+    )
 
 
 class XantechAmplifier(MediaPlayerEntity):
@@ -319,10 +374,10 @@ class ZoneMediaPlayer(MediaPlayerEntity):
         except Exception as e:
             # log up to two times within a specific period to avoid saturating the logs
             @limits(calls=2, period=10 * MINUTES)
-            def log_failed_zone_update(e):
-                LOG.warning(f"Failed updating {self.zone_info}: {e}")
+            def log_failed_zone_update():
+                LOG.warning(f"Failed updating {self.zone_info}: %s", e)
 
-            log_failed_zone_update(e)
+            log_failed_zone_update()
             return
 
         LOG.debug(f"{self.zone_info} status update: {status}")
@@ -358,7 +413,7 @@ class ZoneMediaPlayer(MediaPlayerEntity):
     def state(self):
         """Return the powered on state of the zone."""
         power = self._status.get("power")
-        if power is not None and power is True:
+        if power is not None and power == True:
             return STATE_ON
         else:
             return STATE_OFF
@@ -379,6 +434,19 @@ class ZoneMediaPlayer(MediaPlayerEntity):
         if mute is None:
             mute = False
         return mute
+
+    @property
+    def extra_state_attributes(self):
+        """Return the extra state attributes for bass, treble, balance."""
+        bass = self._status.get('bass')
+        treble = self._status.get('treble')
+        balance = self._status.get('balance')
+        return {
+            "bass": bass,
+            "treble": treble,
+            "balance": balance
+        }
+
 
     @property
     def supported_features(self):
@@ -468,6 +536,22 @@ class ZoneMediaPlayer(MediaPlayerEntity):
         # FIXME: call the volume down API on the amp object, instead of manually increasing volume
         # reminder the volume is on the amplifier scale (0-38), not Home Assistants (1-100)
         await self._amp.set_volume(self._zone_id, max(volume - 1, 0))
+
+    async def async_set_balance(self, call):
+        """Set balance level."""
+        balance = int(call.data.get(ATTR_BALANCE))
+        await self._amp.set_balance(self._zone_id, balance)
+ 
+    async def async_set_bass(self, call):
+        """Set bass level."""
+        bass = int(call.data.get(ATTR_BASS))
+        await self._amp.set_bass(self._zone_id, bass)
+
+    async def async_set_treble(self, call):
+        """Set treble level."""
+        treble = int(call.data.get(ATTR_TREBLE))
+        await self._amp.set_treble(self._zone_id, treble)
+
 
     @property
     def icon(self):

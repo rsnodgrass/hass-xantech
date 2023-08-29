@@ -1,12 +1,33 @@
 {
-    "config": {
-        "step": {"device": {"title": "Xantech", "data": {"tty": "Serial port"}}},
-        "error": {
-            "cannot_connect": "[%key:common::config_flow::error::cannot_connect%]",
-            "unknown": "[%key:common::config_flow::error::unknown%]",
+  "config": {
+    "step": {
+      "device": {
+        "title": "Xantech",
+        "data": {
+          "tty": "Serial port"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "[%key:common::config_flow::error::cannot_connect%]",
+      "unknown": "[%key:common::config_flow::error::unknown%]"
+    },
+    "abort": {
+      "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
+    }
+  },
+    "services": {
+        "set_balance": {
+          "name": "Set Balance",
+          "description": "Set the zone balance level."
         },
-        "abort": {
-            "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
+        "set_bass": {
+          "name": "Set Bass",
+          "description": "Set the bass level."
         },
+        "set_treble": {
+          "name": "Set Treble",
+          "description": "Set treble level."
+    }
     }
 }
