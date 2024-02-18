@@ -151,6 +151,7 @@ See the [example YAML](docs/kevin-example.yaml) for how this was setup.
 * [Community support discussion thread](https://community.home-assistant.io/t/xantech-dayton-audio-sonance-multi-zone-amps/450908)
 * [pyxantech](https://github.com/rsnodgrass/pyxantech)
 * [Home Assistant Monoprice integration](https://www.home-assistant.io/integrations/monoprice/)
+* [RS232 to USB cable](https://www.amazon.com/RS232-to-USB/dp/B0759HSLP1?tag=carreramfi-20)
 
 Sites with active community engagement around the Xantech, Monoprice, and Daytona Audio multi-zone amplifiers:
 
