@@ -36,7 +36,7 @@ See *[pyxantech](https://github.com/rsnodgrass/pyxantech)* for a full list of su
 
 * The [Monoprice MPR-SG6Z](https://www.monoprice.com/product?p_id=10761) and [Dayton Audio DAX66](https://www.parts-express.com/dayton-audio-dax66-6-source-6-room-distributed-whole-house-audio-system-with-keypads-25-wpc--300-585) appear to have licensed or copied the serial interface from Xantech. Both Monoprice and Dayton Audio use a version of the Xantech multi-zone controller protocol.
 
-* Some Xantech MX88 models only support RS232 control using the DB15 output on the rear. This requiries either Xantech's special DB15 to DB9 adapter cable (PN 05913665), or a custom built DB15 to DB9 cable using the pinouts shown in the MX88 manual.
+* Some Xantech MX88 models only support RS232 control using the DB15 output on the rear. This requiries either Xantech's special DB15 to DB9 adapter cable (PN 05913665), or a custom built DB15 to DB9 cable using the pinouts (see [pyxantech for correct details on making this cable](https://github.com/rsnodgrass/pyxantech).
 
 * This *MAY* work with Monoprice if you specific the `monoprice6` config type, but `pyxantech` has not been able to be tested with a physical amplifier.
 
