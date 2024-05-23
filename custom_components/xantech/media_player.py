@@ -34,10 +34,10 @@ from serial import SerialException
 
 from .const import (
     DOMAIN,
-    SERVICE_JOIN,
     SERVICE_RESTORE,
     SERVICE_SNAPSHOT,
-    SERVICE_UNJOIN,
+#    SERVICE_JOIN,
+#    SERVICE_UNJOIN,
 )
 
 LOG = logging.getLogger(__name__)
