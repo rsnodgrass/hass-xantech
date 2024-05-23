@@ -53,18 +53,18 @@ SUPPORTED_ZONE_FEATURES = (
     | SUPPORT_SELECT_SOURCE
 )
 
-CONF_SERIAL_NUMBER = "serial_number"  # allow for true unique id
-CONF_SOURCES = "sources"
-CONF_ZONES = "zones"
-CONF_DEFAULT_SOURCE = "default_source"
-CONF_SERIAL_CONFIG = "rs232"
+CONF_SERIAL_NUMBER = 'serial_number'  # allow for true unique id
+CONF_SOURCES = 'sources'
+CONF_ZONES = 'zones'
+CONF_DEFAULT_SOURCE = 'default_source'
+CONF_SERIAL_CONFIG = 'rs232'
 
 # Valid source ids:
 #    monoprice6: 1-6 (Monoprice and Dayton Audio)
 #    xantech8:   1-8
 SOURCE_IDS = vol.All(vol.Coerce(int), vol.Range(min=1, max=8))
 SOURCE_SCHEMA = vol.Schema(
-    {vol.Required(CONF_NAME, default="Unknown Source"): cv.string}
+    {vol.Required(CONF_NAME, default='Unknown Source'): cv.string}
 )
 
 # TODO: this should come from config for each model...from underlying pyxantech, which
@@ -85,25 +85,25 @@ ZONE_IDS = vol.All(
 )
 ZONE_SCHEMA = vol.Schema(
     {
-        vol.Required(CONF_NAME, default="Audio Zone"): cv.string,
+        vol.Required(CONF_NAME, default='Audio Zone'): cv.string,
         vol.Optional(CONF_DEFAULT_SOURCE): cv.positive_int,
     }
 )
 
 SERIAL_CONFIG_SCHEMA = vol.Schema(
     {
-        vol.Optional("baudrate"): vol.In(BAUD_RATES),
-        vol.Optional("timeout"): cv.small_float,
-        vol.Optional("write_timeout"): cv.small_float,
+        vol.Optional('baudrate'): vol.In(BAUD_RATES),
+        vol.Optional('timeout'): cv.small_float,
+        vol.Optional('write_timeout'): cv.small_float,
     }
 )
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
-        vol.Optional(CONF_NAME, default="Xantech House Audio"): cv.string,
-        vol.Optional(CONF_TYPE, default="xantech8"): vol.In(SUPPORTED_AMP_TYPES),
+        vol.Optional(CONF_NAME, default='Xantech House Audio'): cv.string,
+        vol.Optional(CONF_TYPE, default='xantech8'): vol.In(SUPPORTED_AMP_TYPES),
         vol.Required(CONF_PORT): cv.string,
-        vol.Optional(CONF_ENTITY_NAMESPACE, default="xantech8"): cv.string,
+        vol.Optional(CONF_ENTITY_NAMESPACE, default='xantech8'): cv.string,
         vol.Required(CONF_ZONES): vol.Schema({ZONE_IDS: ZONE_SCHEMA}),
         vol.Required(CONF_SOURCES): vol.Schema({SOURCE_IDS: SOURCE_SCHEMA}),
         vol.Optional(CONF_SERIAL_CONFIG): SERIAL_CONFIG_SCHEMA,
@@ -213,11 +213,11 @@ class XantechAmplifier(MediaPlayerEntity):
         #       Optionally, we could just sort based on the zone number, and let the user physically wire in the
         #       order they want (doesn't work for pre-amp out channel 7/8 on some Xantech)
 
-        self._unique_id = f"{DOMAIN}_{namespace}_{name}".lower().replace(" ", "_")
+        self._unique_id = f'{DOMAIN}_{namespace}_{name}'.lower().replace(' ', '_')
 
     async def async_update(self):
         """Retrieve the latest state from the amp."""
-        LOG.debug("async_update() is empty")
+        LOG.debug('async_update() is empty')
         return
 
     @property
@@ -259,15 +259,15 @@ class XantechAmplifier(MediaPlayerEntity):
 
     async def async_turn_on(self):
         """Turn the media player on."""
-        LOG.debug(f"Turning ON amp: {self._name}")
+        LOG.debug(f'Turning ON amp: {self._name}')
 
     async def async_turn_off(self):
         """Turn the media player off."""
-        LOG.debug(f"Turning OFF amp: {self._name}")
+        LOG.debug(f'Turning OFF amp: {self._name}')
 
     @property
     def icon(self):
-        return "mdi:speaker"
+        return 'mdi:speaker'
 
 
 class ZoneMediaPlayer(MediaPlayerEntity):
@@ -282,11 +282,11 @@ class ZoneMediaPlayer(MediaPlayerEntity):
 
         # FIXME: since this should be a logical media player...why is it not good enough for the user
         # specified name to represent this?  Other than it could be changed...
-        self._unique_id = f"{DOMAIN}_{amp_name}_zone_{zone_id}".lower().replace(
-            " ", "_"
+        self._unique_id = f'{DOMAIN}_{amp_name}_zone_{zone_id}'.lower().replace(
+            ' ', '_'
         )
 
-        LOG.info(f"Creating {self.zone_info} media player")
+        LOG.info(f'Creating {self.zone_info} media player')
 
         self._status = {}
         self._status_snapshot = None
@@ -307,12 +307,12 @@ class ZoneMediaPlayer(MediaPlayerEntity):
 
     @property
     def zone_info(self):
-        return f"{self._amp_name} zone {self._zone_id} ({self._name})"
+        return f'{self._amp_name} zone {self._zone_id} ({self._name})'
 
     async def async_update(self):
         """Retrieve the latest state."""
         try:
-            LOG.debug(f"Updating {self.zone_info}")
+            LOG.debug(f'Updating {self.zone_info}')
             status = await self._amp.zone_status(self._zone_id)
             if not status:
                 return
@@ -320,15 +320,15 @@ class ZoneMediaPlayer(MediaPlayerEntity):
             # log up to two times within a specific period to avoid saturating the logs
             @limits(calls=2, period=10 * MINUTES)
             def log_failed_zone_update(e):
-                LOG.warning(f"Failed updating {self.zone_info}: {e}")
+                LOG.warning(f'Failed updating {self.zone_info}: {e}')
 
             log_failed_zone_update(e)
             return
 
-        LOG.debug(f"{self.zone_info} status update: {status}")
+        LOG.debug(f'{self.zone_info} status update: {status}')
         self._status = status
 
-        source_id = status.get("source")
+        source_id = status.get('source')
         if source_id:
             source_name = self._source_id_to_name.get(source_id)
             if source_name:
@@ -337,7 +337,7 @@ class ZoneMediaPlayer(MediaPlayerEntity):
                 # sometimes the client may have not configured a source, but if the amplifier is set
                 # to a source other than one defined, go ahead and dynamically create that source. This
                 # could happen if the user changes the source through a different app or command.
-                source_name = f"Source {source_id}"
+                source_name = f'Source {source_id}'
                 LOG.warning(
                     f"Undefined source id {source_id} for {self.zone_info}, adding '{source_name}'!"
                 )
@@ -357,7 +357,7 @@ class ZoneMediaPlayer(MediaPlayerEntity):
     @property
     def state(self):
         """Return the powered on state of the zone."""
-        power = self._status.get("power")
+        power = self._status.get('power')
         if power is not None and power is True:
             return STATE_ON
         else:
@@ -366,7 +366,7 @@ class ZoneMediaPlayer(MediaPlayerEntity):
     @property
     def volume_level(self):
         """Volume level of the media player (0..1)."""
-        volume = self._status.get("volume")
+        volume = self._status.get('volume')
         if volume is None:
             return None
         return volume / MAX_VOLUME
@@ -375,7 +375,7 @@ class ZoneMediaPlayer(MediaPlayerEntity):
     def is_volume_muted(self):
         """Boolean if volume is currently muted."""
         # FIXME: what about when volume == 0?
-        mute = self._status.get("mute")
+        mute = self._status.get('mute')
         if mute is None:
             mute = False
         return mute
@@ -398,17 +398,17 @@ class ZoneMediaPlayer(MediaPlayerEntity):
     async def async_snapshot(self):
         """Save zone's current state."""
         self._status_snapshot = await self._amp.zone_status(self._zone_id)
-        LOG.info(f"Saved state snapshot for {self.zone_info}")
+        LOG.info(f'Saved state snapshot for {self.zone_info}')
 
     async def async_restore(self):
         """Restore saved state."""
         if self._status_snapshot:
             await self._amp.restore_zone(self._status_snapshot)
             self.async_schedule_update_ha_state(force_refresh=True)
-            LOG.info(f"Restored previous state for {self.zone_info}")
+            LOG.info(f'Restored previous state for {self.zone_info}')
         else:
             LOG.warning(
-                f"Restore service called for {self.zone_info}, but no snapshot previously saved."
+                f'Restore service called for {self.zone_info}, but no snapshot previously saved.'
             )
 
     async def async_select_source(self, source):
@@ -420,12 +420,12 @@ class ZoneMediaPlayer(MediaPlayerEntity):
             return
 
         source_id = self._source_name_to_id[source]
-        LOG.info(f"Switching {self.zone_info} to source {source_id} ({source})")
+        LOG.info(f'Switching {self.zone_info} to source {source_id} ({source})')
         await self._amp.set_source(self._zone_id, source_id)
 
     async def async_turn_on(self):
         """Turn the media player on."""
-        LOG.debug(f"Turning ON {self.zone_info}")
+        LOG.debug(f'Turning ON {self.zone_info}')
         await self._amp.set_power(self._zone_id, True)
 
         # schedule a poll of the status of the zone ASAP to pickup volume levels/etc
@@ -433,25 +433,25 @@ class ZoneMediaPlayer(MediaPlayerEntity):
 
     async def async_turn_off(self):
         """Turn the media player off."""
-        LOG.debug(f"Turning OFF {self.zone_info}")
+        LOG.debug(f'Turning OFF {self.zone_info}')
         await self._amp.set_power(self._zone_id, False)
 
     async def async_mute_volume(self, mute):
         """Mute (true) or unmute (false) media player."""
-        LOG.debug(f"Setting mute={mute} for zone {self.zone_info}")
+        LOG.debug(f'Setting mute={mute} for zone {self.zone_info}')
         await self._amp.set_mute(self._zone_id, mute)
 
     async def async_set_volume_level(self, volume):
         """Set volume level, range 0—1.0"""
         amp_volume = int(volume * MAX_VOLUME)
         LOG.debug(
-            f"Setting zone {self.zone_info} volume to {amp_volume} (HA volume {volume}"
+            f'Setting zone {self.zone_info} volume to {amp_volume} (HA volume {volume}'
         )
         await self._amp.set_volume(self._zone_id, amp_volume)
 
     async def async_volume_up(self):
         """Volume up the media player."""
-        volume = self._status.get("volume")
+        volume = self._status.get('volume')
         if volume is None:
             return
 
@@ -461,7 +461,7 @@ class ZoneMediaPlayer(MediaPlayerEntity):
 
     async def async_volume_down(self):
         """Volume down media player."""
-        volume = self._status.get("volume")
+        volume = self._status.get('volume')
         if volume is None:
             return
 
@@ -472,8 +472,8 @@ class ZoneMediaPlayer(MediaPlayerEntity):
     @property
     def icon(self):
         if self.state == STATE_OFF or self.is_volume_muted:
-            return "mdi:speaker-off"
-        return "mdi:speaker"
+            return 'mdi:speaker-off'
+        return 'mdi:speaker'
 
     # For similar implementation details, see:
     #   https://github.com/home-assistant/core/blob/dev/homeassistant/components/snapcast/media_player.py
@@ -491,12 +491,12 @@ class ZoneMediaPlayer(MediaPlayerEntity):
         All volume/mute/source options to the master zone apply to all zones."""
         if not add_zones:
             return
-        LOG.info(f"Adding {self._amp_name} zones {add_zones} to group")
+        LOG.info(f'Adding {self._amp_name} zones {add_zones} to group')
         # FIXME: implement
 
     async def async_unjoin(self, remove_zones):
         """Remove a set of zones from the group (including master will delete the group)"""
         if not remove_zones:
             return
-        LOG.info(f"Removing {self._amp_name} zones {remove_zones} from group")
+        LOG.info(f'Removing {self._amp_name} zones {remove_zones} from group')
         # FIXME: implement
