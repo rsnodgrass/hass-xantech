@@ -5,7 +5,11 @@
 import logging
 
 import voluptuous as vol
-from homeassistant.components.media_player import PLATFORM_SCHEMA, MediaPlayerEntity, MediaPlayerEntityFeature
+from homeassistant.components.media_player import (
+    PLATFORM_SCHEMA,
+    MediaPlayerEntity,
+    MediaPlayerEntityFeature
+)
 from homeassistant.const import (
     ATTR_ENTITY_ID,
     CONF_ENTITY_NAMESPACE,
@@ -232,7 +236,7 @@ class XantechAmplifier(MediaPlayerEntity):
         return STATE_UNKNOWN
 
     @property
-    def supported_features(self):
+    def supported_features(self) -> MediaPlayerEntityFeature:
         """Return flag of media commands that are supported."""
         return SUPPORTED_AMP_FEATURES
 
