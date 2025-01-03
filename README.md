@@ -46,12 +46,9 @@ If you have trouble with installation and configuration, visit the [Monoprice Ho
 
 ### Step 1: Install Custom Components
 
-ake sure that [Home Assistant Community Store (HACS)](https://github.com/custom-components/hacs) is installed and then add the "Integration" repository: `rsnodgrass/hass-xantech`.
-
+Make sure that [Home Assistant Community Store (HACS)](https://github.com/custom-components/hacs) is installed and then add the "Integration" repository: `rsnodgrass/hass-xantech`.
 
 ### Step 2: Configuration
-
-Configuration is similar to the monoprice component here: https://www.home-assistant.io/integrations/monoprice/
 
 #### Example configuration.yaml:
 
