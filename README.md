@@ -42,7 +42,7 @@ See *[pyxantech](https://github.com/rsnodgrass/pyxantech)* for a full list of su
 
 ## Installation
 
-If you have trouble with installation and configuration, visit the [Monoprice Home Assistant community discussion](https://community.home-assistant.io/t/monoprice-whole-home-audio-controller-10761-success/19734/62).
+If you have trouble with installation and configuration, visit the [Monoprice Home Assistant community discussion](https://community.home-assistant.io/t/monoprice-whole-home-audio-controller-10761-success/19734/62). The developers are just volunteers from the community and do not provide any support, so it is best to ask the entire community for help or questions.
 
 ### Step 1: Install Custom Components
 
