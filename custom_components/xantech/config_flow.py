@@ -1,15 +1,16 @@
 """Config flow for integration."""
+
 import logging
 
 import voluptuous as vol
-
 from homeassistant import config_entries, core
 from homeassistant.const import CONF_TIMEOUT
 
-from .const import (
-    DOMAIN,
+from .const import (  # pylint:disable=unused-import; pylint:disable=unused-import
+    CONF_EMAIL,
     CONF_TTY,
-)  # pylint:disable=unused-import; pylint:disable=unused-import
+    DOMAIN,
+)
 
 LOG = logging.getLogger(__name__)
 
@@ -22,7 +23,7 @@ async def validate_input(hass: core.HomeAssistant, data):
     """
 
     # Return info that you want to store in the config entry.
-    return {"title": data[CONF_TTY]}  # FIXME
+    return {'title': data[CONF_TTY]}  # FIXME
 
 
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -38,13 +39,13 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             try:
                 info = await validate_input(self.hass, user_input)
                 await self.async_set_unique_id(user_input[CONF_TTY])
-                return self.async_create_entry(title=info["title"], data=user_input)
+                return self.async_create_entry(title=info['title'], data=user_input)
             except Exception:  # pylint: disable=broad-except
-                LOG.exception("Unexpected exception")
-                errors["base"] = "unknown"
+                LOG.exception('Unexpected exception')
+                errors['base'] = 'unknown'
 
         return self.async_show_form(
-            step_id="device", data_schema=DATA_SCHEMA, errors=errors
+            step_id='device', data_schema=DATA_SCHEMA, errors=errors
         )
 
     async def async_step_import(self, user_input):
