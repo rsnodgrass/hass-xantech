@@ -8,7 +8,7 @@ import voluptuous as vol
 from homeassistant.components.media_player import (
     PLATFORM_SCHEMA,
     MediaPlayerEntity,
-    MediaPlayerEntityFeature
+    MediaPlayerEntityFeature,
 )
 from homeassistant.const import (
     ATTR_ENTITY_ID,
@@ -32,8 +32,8 @@ from .const import (
     DOMAIN,
     SERVICE_RESTORE,
     SERVICE_SNAPSHOT,
-#    SERVICE_JOIN,
-#    SERVICE_UNJOIN,
+    #    SERVICE_JOIN,
+    #    SERVICE_UNJOIN,
 )
 
 LOG = logging.getLogger(__name__)
@@ -49,7 +49,7 @@ SUPPORTED_ZONE_FEATURES = (
     | MediaPlayerEntityFeature.VOLUME_SET
     | MediaPlayerEntityFeature.VOLUME_STEP
     | MediaPlayerEntityFeature.TURN_ON
-    | MediaPlayerEntityFeature.TURN_OFF    
+    | MediaPlayerEntityFeature.TURN_OFF
     | MediaPlayerEntityFeature.SELECT_SOURCE
 )
 
@@ -218,7 +218,6 @@ class XantechAmplifier(MediaPlayerEntity):
     async def async_update(self):
         """Retrieve the latest state from the amp."""
         LOG.debug('async_update() is empty')
-        return
 
     @property
     def unique_id(self):
@@ -360,8 +359,7 @@ class ZoneMediaPlayer(MediaPlayerEntity):
         power = self._status.get('power')
         if power is not None and power is True:
             return STATE_ON
-        else:
-            return STATE_OFF
+        return STATE_OFF
 
     @property
     def volume_level(self):
