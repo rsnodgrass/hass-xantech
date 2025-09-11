@@ -23,7 +23,7 @@ from homeassistant.const import (
 from homeassistant.exceptions import PlatformNotReady
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import entity_platform
-from homeassistant.helpers.typing import HomeAssistantType
+from homeassistant.core import HomeAssistant
 from pyxantech import BAUD_RATES, SUPPORTED_AMP_TYPES, async_get_amp_controller
 from ratelimit import limits
 from serial import SerialException
@@ -119,7 +119,7 @@ MINUTES = 60
 
 
 async def async_setup_platform(
-    hass: HomeAssistantType, config, async_add_entities, discovery_info=None
+    hass: HomeAssistant, config, async_add_entities, discovery_info=None
 ):
     """Set up the Xantech amplifier platform."""
     port = config.get(CONF_PORT)
