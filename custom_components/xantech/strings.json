@@ -14,34 +14,40 @@
                 }
             },
             "zones": {
-                "title": "Configure Zones",
-                "description": "Enter zone configuration as 'zone_id: zone_name' per line.\n\nExample:\n{example}",
+                "title": "Name Your Zones",
+                "description": "Give each zone a friendly name. Zone IDs use Xantech's standard addressing: first digit is the controller unit (1-3), second digit is the zone output (1-8). For example, 11-18 are zones on controller 1.",
                 "data": {
                     "zones_config": "Zone Configuration"
+                },
+                "data_description": {
+                    "zones_config": "One zone per line. Format: ID: Name (e.g., 11: Living Room)"
                 }
             },
             "sources": {
-                "title": "Configure Sources",
-                "description": "Enter source configuration as 'source_id: source_name' per line.\n\nExample:\n{example}",
+                "title": "Name Your Audio Sources",
+                "description": "Name the audio inputs. Source IDs (1-8) correspond to input channels.",
                 "data": {
                     "sources_config": "Source Configuration"
+                },
+                "data_description": {
+                    "sources_config": "One source per line. Format: ID: Name"
                 }
             }
         },
         "error": {
-            "cannot_connect": "Failed to connect to the amplifier. Check the serial port and ensure the amplifier is powered on.",
+            "cannot_connect": "Could not connect. Verify the serial port path and cable connection.",
             "unknown": "An unexpected error occurred.",
-            "invalid_zones": "Invalid zone configuration. Use format 'zone_id: zone_name' per line.",
-            "invalid_sources": "Invalid source configuration. Use format 'source_id: source_name' per line."
+            "invalid_zones": "Could not parse zones. Use format: 11: Living Room",
+            "invalid_sources": "Could not parse sources. Use format: 1: TV"
         },
         "abort": {
-            "already_configured": "This amplifier is already configured."
+            "already_configured": "This amplifier is already set up."
         }
     },
     "options": {
         "step": {
             "init": {
-                "title": "Options",
+                "title": "Amplifier Settings",
                 "description": "Configure integration options.",
                 "data": {
                     "scan_interval": "Polling Interval"
@@ -55,8 +61,8 @@
     "selector": {
         "amp_type": {
             "options": {
-                "xantech8": "Xantech 8-Zone",
-                "monoprice6": "Monoprice 6-Zone",
+                "xantech8": "Xantech MRC88 (8-Zone)",
+                "monoprice6": "Monoprice MPR-6ZHMAUT (6-Zone)",
                 "dax88": "Dayton Audio DAX88",
                 "zpr68-10": "Xantech ZPR68-10",
                 "sonance": "Sonance"
