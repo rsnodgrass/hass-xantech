@@ -165,7 +165,7 @@ class XantechConfigFlow(ConfigFlow, domain=DOMAIN):
                     data=self._data,
                 )
 
-        default_sources = '1: Source 1\n2: Source 2\n3: Source 3'
+        default_sources = '1: TV\n2: Streaming\n3: Turntable\n4: CD Player'
 
         return self.async_show_form(
             step_id='sources',
@@ -227,10 +227,14 @@ class XantechConfigFlow(ConfigFlow, domain=DOMAIN):
         """Get default zones text for an amplifier type."""
         if amp_type == 'monoprice6':
             return (
-                '11: Zone 1\n12: Zone 2\n13: Zone 3\n14: Zone 4\n15: Zone 5\n16: Zone 6'
+                '11: Living Room\n12: Kitchen\n13: Master Bedroom\n'
+                '14: Office\n15: Patio\n16: Dining Room'
             )
         # default to xantech8
-        return '11: Zone 1\n12: Zone 2\n13: Zone 3\n14: Zone 4\n15: Zone 5\n16: Zone 6'
+        return (
+            '11: Living Room\n12: Kitchen\n13: Master Bedroom\n'
+            '14: Office\n15: Patio\n16: Dining Room'
+        )
 
     @staticmethod
     @callback
