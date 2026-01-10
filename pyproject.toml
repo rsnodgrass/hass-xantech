@@ -1,19 +1,49 @@
-[tool.isort]
-force_to_top = [ "logging" ]
-balanced_wrapping = true
+[project]
+name = "hass-xantech"
+version = "1.0.0"
+description = "Home Assistant integration for Xantech Multi-Zone Audio amplifiers"
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.13"
+dependencies = [
+    "pyxantech>=0.9.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "pytest-homeassistant-custom-component>=0.13.0",
+    "ruff>=0.8.0",
+    "mypy>=1.13.0",
+]
 
 [tool.ruff]
 line-length = 88
 indent-width = 4
-lint.ignore = [
-       "F403",
-       "F405"  # * imports
+target-version = "py313"
+
+[tool.ruff.lint]
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # Pyflakes
+    "I",      # isort
+    "UP",     # pyupgrade
+    "B",      # flake8-bugbear
+    "C4",     # flake8-comprehensions
+    "SIM",    # flake8-simplify
+    "LOG",    # flake8-logging
+    "G",      # flake8-logging-format
+]
+ignore = [
+    "F403",   # star imports
+    "F405",   # star imports usage
 ]
 
 [tool.ruff.format]
-quote-style = "single" # Use a single quote instead of double
+quote-style = "single"
 
-# import sorting settings (replaces isort)
 [tool.ruff.lint.isort]
 force-single-line = false
 force-sort-within-sections = true
@@ -22,10 +52,12 @@ section-order = ["future", "standard-library", "third-party", "first-party", "lo
 combine-as-imports = true
 force-to-top = ["logging"]
 
-[tool.pycln]
-all = true
+[tool.mypy]
+python_version = "3.13"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
 
-[tool.refurb]
-python_version = "3.11"
-quiet = true
-ignore = [ "FURB184" ]
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

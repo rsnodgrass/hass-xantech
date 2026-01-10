@@ -1,15 +1,13 @@
 {
     "domain": "xantech",
-    "name": "Xantech/Dayton Audio/Sonance Multi-Zone Amps",
-    "version": "0.1.4",
+    "name": "Xantech Multi-Zone Audio",
+    "version": "0.2.0",
     "documentation": "https://github.com/rsnodgrass/hass-xantech",
-    "requirements": ["pyxantech>=0.9.0", "ratelimit>=2.2.1"],
-    "dependencies": [],
-    "codeowners": [""],
+    "issue_tracker": "https://github.com/rsnodgrass/hass-xantech/issues",
+    "requirements": ["pyxantech>=0.9.0"],
+    "homeassistant": "2025.2.0",
+    "codeowners": ["@rsnodgrass"],
+    "config_flow": true,
     "iot_class": "local_polling",
-    "supported_brands": {
-        "monoprice": "Monoprice",
-        "daytonaudio": "Dayton Audio",
-        "sonance": "Sonance"
-    }
+    "integration_type": "hub"
 }
