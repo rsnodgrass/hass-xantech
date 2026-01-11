@@ -230,6 +230,11 @@ class XantechConfigFlow(ConfigFlow, domain=DOMAIN):
                 '11: Living Room\n12: Kitchen\n13: Master Bedroom\n'
                 '14: Office\n15: Patio\n16: Dining Room'
             )
+        if amp_type == 'dax88':
+            return (
+                '11: Living Room\n12: Kitchen\n13: Master Bedroom\n'
+                '14: Office\n15: Patio\n16: Dining Room\n17: Garage\n18: Basement'
+            )
         # default to xantech8
         return (
             '11: Living Room\n12: Kitchen\n13: Master Bedroom\n'
