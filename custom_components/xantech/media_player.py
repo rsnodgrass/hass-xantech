@@ -118,7 +118,15 @@ class ZoneMediaPlayer(CoordinatorEntity[XantechCoordinator], MediaPlayerEntity):
 
     @property
     def _zone_status(self) -> dict[str, Any]:
-        """Get current zone status from coordinator data."""
+        """Get current zone status from coordinator data.
+
+        Expected types from pyxantech ZoneStatus.dict:
+            power: bool (not string '01'/'00')
+            mute: bool
+            volume: int (0-38)
+            source: int
+            zone: int
+        """
         if self.coordinator.data:
             return self.coordinator.data.get(self._zone_id, {})
         return {}
