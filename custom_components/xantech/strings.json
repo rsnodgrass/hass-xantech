@@ -15,7 +15,7 @@
             },
             "zones": {
                 "title": "Name Your Zones",
-                "description": "Give each zone a friendly name. Zone IDs use Xantech's standard addressing: first digit is the controller unit (1-3), second digit is the zone output (1-8). For example, 11-18 are zones on controller 1.",
+                "description": "Give each zone a friendly name. Zone IDs use standard addressing: first digit is the controller unit (1-3), second digit is the zone output (1-8). For example, 11-18 are zones on controller 1.",
                 "data": {
                     "zones_config": "Zone Configuration"
                 },
