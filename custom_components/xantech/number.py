@@ -44,6 +44,15 @@ async def async_setup_entry(
     coordinator = data.coordinator
     amp_type = data.amp_type
 
+    # check device capabilities for tone controls
+    supports_bass = get_device_config(amp_type, 'supports_bass', log_missing=False) or False
+    supports_treble = get_device_config(amp_type, 'supports_treble', log_missing=False) or False
+    supports_balance = get_device_config(amp_type, 'supports_balance', log_missing=False) or False
+
+    if not (supports_bass or supports_treble or supports_balance):
+        LOG.debug('Device %s does not support any tone controls', amp_type)
+        return
+
     # get device-specific limits from pyxantech config
     max_bass = get_device_config(amp_type, 'max_bass', log_missing=False) or DEFAULT_MAX_BASS
     max_treble = get_device_config(amp_type, 'max_treble', log_missing=False) or DEFAULT_MAX_TREBLE
@@ -57,34 +66,37 @@ async def async_setup_entry(
         zone_id = int(zone_id_str)
         zone_name = zone_data.get('name', f'Zone {zone_id}')
 
-        # create bass, treble, balance entities for each zone
-        entities.append(
-            ZoneBassNumber(
-                coordinator=coordinator,
-                entry=entry,
-                zone_id=zone_id,
-                zone_name=zone_name,
-                max_value=max_bass,
+        # only create entities for supported controls
+        if supports_bass:
+            entities.append(
+                ZoneBassNumber(
+                    coordinator=coordinator,
+                    entry=entry,
+                    zone_id=zone_id,
+                    zone_name=zone_name,
+                    max_value=max_bass,
+                )
             )
-        )
-        entities.append(
-            ZoneTrebleNumber(
-                coordinator=coordinator,
-                entry=entry,
-                zone_id=zone_id,
-                zone_name=zone_name,
-                max_value=max_treble,
+        if supports_treble:
+            entities.append(
+                ZoneTrebleNumber(
+                    coordinator=coordinator,
+                    entry=entry,
+                    zone_id=zone_id,
+                    zone_name=zone_name,
+                    max_value=max_treble,
+                )
             )
-        )
-        entities.append(
-            ZoneBalanceNumber(
-                coordinator=coordinator,
-                entry=entry,
-                zone_id=zone_id,
-                zone_name=zone_name,
-                max_value=max_balance,
+        if supports_balance:
+            entities.append(
+                ZoneBalanceNumber(
+                    coordinator=coordinator,
+                    entry=entry,
+                    zone_id=zone_id,
+                    zone_name=zone_name,
+                    max_value=max_balance,
+                )
             )
-        )
 
     LOG.info(
         'Adding %d audio control entities for %s',
