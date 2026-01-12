@@ -24,18 +24,23 @@ DEFAULT_AMP_TYPE: Final = 'xantech8'
 DEFAULT_SCAN_INTERVAL: Final = 30
 
 # Amplifier types supported by pyxantech
+# xantech8: MX88, MX88ai, MRC88, MRC88m, MRAUDIO8X8, MRAUDIO8X8m
 AMP_TYPE_XANTECH8: Final = 'xantech8'
+# monoprice6: Monoprice MPR-SG6Z, Dayton Audio DAX66, Soundavo WS66i
 AMP_TYPE_MONOPRICE6: Final = 'monoprice6'
+# dax88: Dayton Audio DAX88 (6+2 zone)
 AMP_TYPE_DAX88: Final = 'dax88'
+# zpr68-10: Xantech ZPR68-10 controller
 AMP_TYPE_ZPR68: Final = 'zpr68-10'
-AMP_TYPE_SONANCE: Final = 'sonance'
+# sonance6: Sonance C4630 SE (6-zone), 875D MKII (4-zone)
+AMP_TYPE_SONANCE6: Final = 'sonance6'
 
 SUPPORTED_AMP_TYPES: Final[list[str]] = [
     AMP_TYPE_XANTECH8,
     AMP_TYPE_MONOPRICE6,
     AMP_TYPE_DAX88,
     AMP_TYPE_ZPR68,
-    AMP_TYPE_SONANCE,
+    AMP_TYPE_SONANCE6,
 ]
 
 # Max volume level for amps

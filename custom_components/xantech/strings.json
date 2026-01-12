@@ -48,12 +48,52 @@
         "step": {
             "init": {
                 "title": "Amplifier Settings",
-                "description": "Configure integration options.",
+                "description": "Choose what to configure.",
+                "menu_options": {
+                    "polling": "Polling Interval",
+                    "connection": "Connection Settings",
+                    "zones": "Edit Zones",
+                    "sources": "Edit Sources"
+                }
+            },
+            "connection": {
+                "title": "Connection Settings",
+                "description": "Update the serial port or network address.",
+                "data": {
+                    "port": "Serial Port"
+                },
+                "data_description": {
+                    "port": "Serial port path (e.g., /dev/ttyUSB0) or socket URL (socket://192.168.1.10:888/)"
+                }
+            },
+            "polling": {
+                "title": "Polling Interval",
+                "description": "Configure how often to poll the amplifier.",
                 "data": {
                     "scan_interval": "Polling Interval"
                 },
                 "data_description": {
                     "scan_interval": "How often to poll the amplifier for status updates (in seconds)"
+                }
+            },
+            "zones": {
+                "title": "Edit Zones",
+                "description": "Update zone names. Zone IDs use standard addressing: first digit is the controller unit (1-3), second digit is the zone output (1-8).",
+                "data": {
+                    "zones_config": "Zone Configuration"
+                },
+                "data_description": {
+                    "zones_config": "One zone per line. Format: ID: Name (e.g., 11: Living Room)"
+                }
+            },
+            "sources": {
+                "title": "Edit Sources",
+                "description": "Update audio source names.",
+                "data": {
+                    "sources_config": "Source Configuration"
+                },
+                "data_description": {
+                    "sources_config": "One source per line. Format: ID: Name"
                 }
             }
         }
@@ -61,11 +101,11 @@
     "selector": {
         "amp_type": {
             "options": {
-                "xantech8": "Xantech MRC88 (8-Zone)",
-                "monoprice6": "Monoprice MPR-6ZHMAUT (6-Zone)",
-                "dax88": "Dayton Audio DAX88",
+                "xantech8": "Xantech 8-Zone (MRC88, MX88, MRAUDIO8X8)",
+                "monoprice6": "Monoprice/Dayton 6-Zone (MPR-SG6Z, DAX66, WS66i)",
+                "dax88": "Dayton Audio DAX88 (6+2 Zone)",
                 "zpr68-10": "Xantech ZPR68-10",
-                "sonance": "Sonance"
+                "sonance6": "Sonance (C4630 SE, 875D MKII)"
             }
         }
     },

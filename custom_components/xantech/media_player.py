@@ -100,6 +100,10 @@ class ZoneMediaPlayer(CoordinatorEntity[XantechCoordinator], MediaPlayerEntity):
         # snapshot storage
         self._status_snapshot: dict[str, Any] | None = None
 
+        # optimistic state tracking for instant UI feedback
+        self._optimistic_state: dict[str, Any] = {}
+        self._pending_commands: int = 0
+
         # entity attributes - preserve existing unique_id format for migration
         self._attr_unique_id = (
             f'{DOMAIN}_{coordinator.amp_name}_zone_{zone_id}'.lower().replace(' ', '_')
@@ -118,7 +122,7 @@ class ZoneMediaPlayer(CoordinatorEntity[XantechCoordinator], MediaPlayerEntity):
 
     @property
     def _zone_status(self) -> dict[str, Any]:
-        """Get current zone status from coordinator data.
+        """Get current zone status, preferring optimistic state for instant UI.
 
         Expected types from pyxantech ZoneStatus.dict:
             power: bool (not string '01'/'00')
@@ -127,9 +131,33 @@ class ZoneMediaPlayer(CoordinatorEntity[XantechCoordinator], MediaPlayerEntity):
             source: int
             zone: int
         """
+        base_status: dict[str, Any] = {}
         if self.coordinator.data:
-            return self.coordinator.data.get(self._zone_id, {})
-        return {}
+            base_status = self.coordinator.data.get(self._zone_id, {})
+        # merge optimistic state on top for instant UI feedback
+        return {**base_status, **self._optimistic_state}
+
+    def _set_optimistic(self, **kwargs: Any) -> None:
+        """Set optimistic state and trigger UI update."""
+        self._optimistic_state.update(kwargs)
+        self._pending_commands += 1
+        self.async_write_ha_state()
+
+    def _command_complete(self) -> None:
+        """Mark a command as complete."""
+        self._pending_commands = max(0, self._pending_commands - 1)
+
+    def _clear_optimistic(self) -> None:
+        """Clear optimistic state only when no commands are pending."""
+        if self._pending_commands == 0:
+            self._optimistic_state.clear()
+
+    @callback
+    def _handle_coordinator_update(self) -> None:
+        """Handle updated data from the coordinator."""
+        # only clear optimistic state if no commands are in flight
+        self._clear_optimistic()
+        super()._handle_coordinator_update()
 
     @property
     def state(self) -> MediaPlayerState:
@@ -183,23 +211,39 @@ class ZoneMediaPlayer(CoordinatorEntity[XantechCoordinator], MediaPlayerEntity):
     async def async_turn_on(self) -> None:
         """Turn the media player on."""
         LOG.debug('Turning on zone %d', self._zone_id)
-        await self.coordinator.async_set_zone_power(self._zone_id, True)
+        self._set_optimistic(power=True)
+        try:
+            await self.coordinator.async_set_zone_power(self._zone_id, True)
+        finally:
+            self._command_complete()
 
     async def async_turn_off(self) -> None:
         """Turn the media player off."""
         LOG.debug('Turning off zone %d', self._zone_id)
-        await self.coordinator.async_set_zone_power(self._zone_id, False)
+        self._set_optimistic(power=False)
+        try:
+            await self.coordinator.async_set_zone_power(self._zone_id, False)
+        finally:
+            self._command_complete()
 
     async def async_mute_volume(self, mute: bool) -> None:
         """Mute or unmute media player."""
         LOG.debug('Setting mute=%s for zone %d', mute, self._zone_id)
-        await self.coordinator.async_set_zone_mute(self._zone_id, mute)
+        self._set_optimistic(mute=mute)
+        try:
+            await self.coordinator.async_set_zone_mute(self._zone_id, mute)
+        finally:
+            self._command_complete()
 
     async def async_set_volume_level(self, volume: float) -> None:
         """Set volume level, range 0-1.0."""
         amp_volume = int(volume * MAX_VOLUME)
         LOG.debug('Setting zone %d volume to %d', self._zone_id, amp_volume)
-        await self.coordinator.async_set_zone_volume(self._zone_id, amp_volume)
+        self._set_optimistic(volume=amp_volume)
+        try:
+            await self.coordinator.async_set_zone_volume(self._zone_id, amp_volume)
+        finally:
+            self._command_complete()
 
     async def async_volume_up(self) -> None:
         """Volume up the media player."""
@@ -207,7 +251,11 @@ class ZoneMediaPlayer(CoordinatorEntity[XantechCoordinator], MediaPlayerEntity):
         if volume is None:
             return
         new_volume = min(volume + 1, MAX_VOLUME)
-        await self.coordinator.async_set_zone_volume(self._zone_id, new_volume)
+        self._set_optimistic(volume=new_volume)
+        try:
+            await self.coordinator.async_set_zone_volume(self._zone_id, new_volume)
+        finally:
+            self._command_complete()
 
     async def async_volume_down(self) -> None:
         """Volume down media player."""
@@ -215,7 +263,11 @@ class ZoneMediaPlayer(CoordinatorEntity[XantechCoordinator], MediaPlayerEntity):
         if volume is None:
             return
         new_volume = max(volume - 1, 0)
-        await self.coordinator.async_set_zone_volume(self._zone_id, new_volume)
+        self._set_optimistic(volume=new_volume)
+        try:
+            await self.coordinator.async_set_zone_volume(self._zone_id, new_volume)
+        finally:
+            self._command_complete()
 
     async def async_select_source(self, source: str) -> None:
         """Set input source."""
@@ -232,7 +284,11 @@ class ZoneMediaPlayer(CoordinatorEntity[XantechCoordinator], MediaPlayerEntity):
         LOG.debug(
             'Switching zone %d to source %d (%s)', self._zone_id, source_id, source
         )
-        await self.coordinator.async_set_zone_source(self._zone_id, source_id)
+        self._set_optimistic(source=source_id)
+        try:
+            await self.coordinator.async_set_zone_source(self._zone_id, source_id)
+        finally:
+            self._command_complete()
 
     async def async_snapshot(self) -> None:
         """Save zone's current state."""
