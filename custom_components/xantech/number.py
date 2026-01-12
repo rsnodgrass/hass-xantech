@@ -10,7 +10,6 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
-
 from pyxantech import get_device_config
 
 from .const import (
@@ -45,18 +44,33 @@ async def async_setup_entry(
     amp_type = data.amp_type
 
     # check device capabilities for tone controls
-    supports_bass = get_device_config(amp_type, 'supports_bass', log_missing=False) or False
-    supports_treble = get_device_config(amp_type, 'supports_treble', log_missing=False) or False
-    supports_balance = get_device_config(amp_type, 'supports_balance', log_missing=False) or False
+    supports_bass = (
+        get_device_config(amp_type, 'supports_bass', log_missing=False) or False
+    )
+    supports_treble = (
+        get_device_config(amp_type, 'supports_treble', log_missing=False) or False
+    )
+    supports_balance = (
+        get_device_config(amp_type, 'supports_balance', log_missing=False) or False
+    )
 
     if not (supports_bass or supports_treble or supports_balance):
         LOG.debug('Device %s does not support any tone controls', amp_type)
         return
 
     # get device-specific limits from pyxantech config
-    max_bass = get_device_config(amp_type, 'max_bass', log_missing=False) or DEFAULT_MAX_BASS
-    max_treble = get_device_config(amp_type, 'max_treble', log_missing=False) or DEFAULT_MAX_TREBLE
-    max_balance = get_device_config(amp_type, 'max_balance', log_missing=False) or DEFAULT_MAX_BALANCE
+    max_bass = (
+        get_device_config(amp_type, 'max_bass', log_missing=False)
+        or DEFAULT_MAX_BASS
+    )
+    max_treble = (
+        get_device_config(amp_type, 'max_treble', log_missing=False)
+        or DEFAULT_MAX_TREBLE
+    )
+    max_balance = (
+        get_device_config(amp_type, 'max_balance', log_missing=False)
+        or DEFAULT_MAX_BALANCE
+    )
 
     zones_config = entry.data.get(CONF_ZONES, {})
 

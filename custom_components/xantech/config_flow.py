@@ -24,7 +24,7 @@ from homeassistant.helpers.selector import (
     TextSelectorConfig,
     TextSelectorType,
 )
-from pyxantech import async_get_amp_controller, get_device_config
+from pyxantech import async_get_amp_controller
 from serial import SerialException
 import voluptuous as vol
 
