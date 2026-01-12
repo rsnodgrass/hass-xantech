@@ -44,12 +44,14 @@ class XantechData:
         self,
         coordinator: XantechCoordinator,
         amp: AmpControlBase,
+        amp_type: str,
         sources: dict[int, str],
         enable_audio_controls: bool = False,
     ) -> None:
         """Initialize runtime data."""
         self.coordinator = coordinator
         self.amp = amp
+        self.amp_type = amp_type
         self.sources = sources
         self.enable_audio_controls = enable_audio_controls
 
@@ -111,6 +113,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: XantechConfigEntry) -> b
     entry.runtime_data = XantechData(
         coordinator=coordinator,
         amp=amp,
+        amp_type=amp_type,
         sources=sources,
         enable_audio_controls=enable_audio_controls,
     )

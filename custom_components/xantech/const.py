@@ -47,14 +47,10 @@ SUPPORTED_AMP_TYPES: Final[list[str]] = [
 # Max volume level for amps
 MAX_VOLUME: Final = 38
 
-# Audio control ranges (common across supported amps)
-MAX_BASS: Final = 14
-MAX_TREBLE: Final = 14
-MAX_BALANCE: Final = 20
-# neutral/center values
-NEUTRAL_BASS: Final = 7
-NEUTRAL_TREBLE: Final = 7
-CENTER_BALANCE: Final = 10
+# Audio control fallback defaults (actual values loaded from pyxantech device config)
+DEFAULT_MAX_BASS: Final = 14
+DEFAULT_MAX_TREBLE: Final = 14
+DEFAULT_MAX_BALANCE: Final = 20
 
 # Service names
 SERVICE_SNAPSHOT: Final = 'snapshot'

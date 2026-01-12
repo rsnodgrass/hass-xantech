@@ -11,13 +11,15 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
+from pyxantech import get_device_config
+
 from .const import (
     CONF_ENABLE_AUDIO_CONTROLS,
     CONF_ZONES,
+    DEFAULT_MAX_BALANCE,
+    DEFAULT_MAX_BASS,
+    DEFAULT_MAX_TREBLE,
     DOMAIN,
-    MAX_BALANCE,
-    MAX_BASS,
-    MAX_TREBLE,
 )
 from .coordinator import XantechCoordinator
 
@@ -40,6 +42,12 @@ async def async_setup_entry(
 
     data = entry.runtime_data
     coordinator = data.coordinator
+    amp_type = data.amp_type
+
+    # get device-specific limits from pyxantech config
+    max_bass = get_device_config(amp_type, 'max_bass', log_missing=False) or DEFAULT_MAX_BASS
+    max_treble = get_device_config(amp_type, 'max_treble', log_missing=False) or DEFAULT_MAX_TREBLE
+    max_balance = get_device_config(amp_type, 'max_balance', log_missing=False) or DEFAULT_MAX_BALANCE
 
     zones_config = entry.data.get(CONF_ZONES, {})
 
@@ -56,6 +64,7 @@ async def async_setup_entry(
                 entry=entry,
                 zone_id=zone_id,
                 zone_name=zone_name,
+                max_value=max_bass,
             )
         )
         entities.append(
@@ -64,6 +73,7 @@ async def async_setup_entry(
                 entry=entry,
                 zone_id=zone_id,
                 zone_name=zone_name,
+                max_value=max_treble,
             )
         )
         entities.append(
@@ -72,6 +82,7 @@ async def async_setup_entry(
                 entry=entry,
                 zone_id=zone_id,
                 zone_name=zone_name,
+                max_value=max_balance,
             )
         )
 
@@ -88,6 +99,8 @@ class ZoneAudioControlNumber(CoordinatorEntity[XantechCoordinator], NumberEntity
 
     _attr_has_entity_name = True
     _attr_mode = NumberMode.SLIDER
+    _attr_native_min_value = 0
+    _attr_native_step = 1
 
     def __init__(
         self,
@@ -97,6 +110,7 @@ class ZoneAudioControlNumber(CoordinatorEntity[XantechCoordinator], NumberEntity
         zone_name: str,
         control_key: str,
         name_suffix: str,
+        max_value: int,
     ) -> None:
         """Initialize the audio control number entity."""
         super().__init__(coordinator)
@@ -105,6 +119,9 @@ class ZoneAudioControlNumber(CoordinatorEntity[XantechCoordinator], NumberEntity
         self._zone_name = zone_name
         self._control_key = control_key
         self._entry = entry
+
+        # set device-specific max value
+        self._attr_native_max_value = float(max_value)
 
         # optimistic state tracking
         self._optimistic_value: int | None = None
@@ -165,9 +182,6 @@ class ZoneAudioControlNumber(CoordinatorEntity[XantechCoordinator], NumberEntity
 class ZoneBassNumber(ZoneAudioControlNumber):
     """Number entity for zone bass control."""
 
-    _attr_native_min_value = 0
-    _attr_native_max_value = MAX_BASS
-    _attr_native_step = 1
     _attr_icon = 'mdi:speaker-wireless'
 
     def __init__(
@@ -176,6 +190,7 @@ class ZoneBassNumber(ZoneAudioControlNumber):
         entry: XantechConfigEntry,
         zone_id: int,
         zone_name: str,
+        max_value: int,
     ) -> None:
         """Initialize the bass control entity."""
         super().__init__(
@@ -185,6 +200,7 @@ class ZoneBassNumber(ZoneAudioControlNumber):
             zone_name=zone_name,
             control_key='bass',
             name_suffix='Bass',
+            max_value=max_value,
         )
 
     async def async_set_native_value(self, value: float) -> None:
@@ -201,9 +217,6 @@ class ZoneBassNumber(ZoneAudioControlNumber):
 class ZoneTrebleNumber(ZoneAudioControlNumber):
     """Number entity for zone treble control."""
 
-    _attr_native_min_value = 0
-    _attr_native_max_value = MAX_TREBLE
-    _attr_native_step = 1
     _attr_icon = 'mdi:sine-wave'
 
     def __init__(
@@ -212,6 +225,7 @@ class ZoneTrebleNumber(ZoneAudioControlNumber):
         entry: XantechConfigEntry,
         zone_id: int,
         zone_name: str,
+        max_value: int,
     ) -> None:
         """Initialize the treble control entity."""
         super().__init__(
@@ -221,6 +235,7 @@ class ZoneTrebleNumber(ZoneAudioControlNumber):
             zone_name=zone_name,
             control_key='treble',
             name_suffix='Treble',
+            max_value=max_value,
         )
 
     async def async_set_native_value(self, value: float) -> None:
@@ -237,9 +252,6 @@ class ZoneTrebleNumber(ZoneAudioControlNumber):
 class ZoneBalanceNumber(ZoneAudioControlNumber):
     """Number entity for zone balance control."""
 
-    _attr_native_min_value = 0
-    _attr_native_max_value = MAX_BALANCE
-    _attr_native_step = 1
     _attr_icon = 'mdi:speaker-multiple'
 
     def __init__(
@@ -248,6 +260,7 @@ class ZoneBalanceNumber(ZoneAudioControlNumber):
         entry: XantechConfigEntry,
         zone_id: int,
         zone_name: str,
+        max_value: int,
     ) -> None:
         """Initialize the balance control entity."""
         super().__init__(
@@ -257,6 +270,7 @@ class ZoneBalanceNumber(ZoneAudioControlNumber):
             zone_name=zone_name,
             control_key='balance',
             name_suffix='Balance',
+            max_value=max_value,
         )
 
     async def async_set_native_value(self, value: float) -> None:
