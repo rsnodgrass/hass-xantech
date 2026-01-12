@@ -3,7 +3,7 @@
         "step": {
             "user": {
                 "title": "Connect to Amplifier",
-                "description": "Configure connection to your Xantech, Dayton Audio, or Monoprice multi-zone amplifier.",
+                "description": "Configure connection to your Xantech, Dayton Audio, or Monoprice multi-zone amplifier. [☕ Tip the Author](https://buymeacoffee.com/DYks67r)",
                 "data": {
                     "port": "Serial Port",
                     "amp_type": "Amplifier Type"
