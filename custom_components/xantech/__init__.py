@@ -16,6 +16,7 @@ from serial import SerialException
 
 from .const import (
     CONF_AMP_TYPE,
+    CONF_ENABLE_AUDIO_CONTROLS,
     CONF_PORT,
     CONF_SCAN_INTERVAL,
     CONF_SOURCES,
@@ -44,11 +45,13 @@ class XantechData:
         coordinator: XantechCoordinator,
         amp: AmpControlBase,
         sources: dict[int, str],
+        enable_audio_controls: bool = False,
     ) -> None:
         """Initialize runtime data."""
         self.coordinator = coordinator
         self.amp = amp
         self.sources = sources
+        self.enable_audio_controls = enable_audio_controls
 
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
@@ -101,11 +104,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: XantechConfigEntry) -> b
     # fetch initial data
     await coordinator.async_config_entry_first_refresh()
 
+    # get feature settings
+    enable_audio_controls = entry.data.get(CONF_ENABLE_AUDIO_CONTROLS, False)
+
     # store runtime data
     entry.runtime_data = XantechData(
         coordinator=coordinator,
         amp=amp,
         sources=sources,
+        enable_audio_controls=enable_audio_controls,
     )
 
     # register services

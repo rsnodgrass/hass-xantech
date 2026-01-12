@@ -17,6 +17,7 @@ CONF_DEFAULT_SOURCE: Final = 'default_source'
 
 # Options
 CONF_SCAN_INTERVAL: Final = 'scan_interval'
+CONF_ENABLE_AUDIO_CONTROLS: Final = 'enable_audio_controls'
 
 # Defaults
 DEFAULT_NAME: Final = 'Xantech Multi-Zone Audio'
@@ -46,6 +47,15 @@ SUPPORTED_AMP_TYPES: Final[list[str]] = [
 # Max volume level for amps
 MAX_VOLUME: Final = 38
 
+# Audio control ranges (common across supported amps)
+MAX_BASS: Final = 14
+MAX_TREBLE: Final = 14
+MAX_BALANCE: Final = 20
+# neutral/center values
+NEUTRAL_BASS: Final = 7
+NEUTRAL_TREBLE: Final = 7
+CENTER_BALANCE: Final = 10
+
 # Service names
 SERVICE_SNAPSHOT: Final = 'snapshot'
 SERVICE_RESTORE: Final = 'restore'
@@ -55,4 +65,4 @@ ATTR_ZONE_ID: Final = 'zone_id'
 ATTR_SOURCE_ID: Final = 'source_id'
 
 # Platforms
-PLATFORMS: Final[list[str]] = ['media_player']
+PLATFORMS: Final[list[str]] = ['media_player', 'number']

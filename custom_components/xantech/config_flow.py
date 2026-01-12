@@ -13,6 +13,7 @@ from homeassistant.config_entries import (
 )
 from homeassistant.core import callback
 from homeassistant.helpers.selector import (
+    BooleanSelector,
     NumberSelector,
     NumberSelectorConfig,
     NumberSelectorMode,
@@ -29,6 +30,7 @@ import voluptuous as vol
 
 from .const import (
     CONF_AMP_TYPE,
+    CONF_ENABLE_AUDIO_CONTROLS,
     CONF_PORT,
     CONF_SCAN_INTERVAL,
     CONF_SOURCES,
@@ -119,6 +121,9 @@ class XantechConfigFlow(ConfigFlow, domain=DOMAIN):
                 errors['base'] = 'invalid_zones'
             else:
                 self._data[CONF_ZONES] = zones
+                self._data[CONF_ENABLE_AUDIO_CONTROLS] = user_input.get(
+                    CONF_ENABLE_AUDIO_CONTROLS, False
+                )
                 return await self.async_step_sources()
 
         # default zone config for the amp type
@@ -136,6 +141,9 @@ class XantechConfigFlow(ConfigFlow, domain=DOMAIN):
                             multiline=True,
                         )
                     ),
+                    vol.Optional(
+                        CONF_ENABLE_AUDIO_CONTROLS, default=False
+                    ): BooleanSelector(),
                 }
             ),
             errors=errors,
@@ -275,7 +283,7 @@ class XantechOptionsFlow(OptionsFlow):
         """Show menu of configuration options."""
         return self.async_show_menu(
             step_id='init',
-            menu_options=['polling', 'connection', 'zones', 'sources'],
+            menu_options=['polling', 'connection', 'zones', 'sources', 'features'],
         )
 
     async def async_step_connection(
@@ -474,3 +482,37 @@ class XantechOptionsFlow(OptionsFlow):
             name = sources[source_id].get('name', f'Source {source_id}')
             lines.append(f'{source_id}: {name}')
         return '\n'.join(lines)
+
+    async def async_step_features(
+        self,
+        user_input: dict[str, Any] | None = None,
+    ) -> ConfigFlowResult:
+        """Configure optional features."""
+        if user_input is not None:
+            # update config entry data with feature settings
+            new_data = {
+                **self.config_entry.data,
+                CONF_ENABLE_AUDIO_CONTROLS: user_input.get(
+                    CONF_ENABLE_AUDIO_CONTROLS, False
+                ),
+            }
+            self.hass.config_entries.async_update_entry(
+                self.config_entry, data=new_data
+            )
+            return self.async_create_entry(title='', data=self.config_entry.options)
+
+        current_audio_controls = self.config_entry.data.get(
+            CONF_ENABLE_AUDIO_CONTROLS, False
+        )
+
+        return self.async_show_form(
+            step_id='features',
+            data_schema=vol.Schema(
+                {
+                    vol.Optional(
+                        CONF_ENABLE_AUDIO_CONTROLS,
+                        default=current_audio_controls,
+                    ): BooleanSelector(),
+                }
+            ),
+        )

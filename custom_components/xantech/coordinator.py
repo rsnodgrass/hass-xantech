@@ -126,6 +126,33 @@ class XantechCoordinator(DataUpdateCoordinator[dict[int, dict[str, Any]]]):
             LOG.exception('Failed to set mute for zone %d', zone_id)
             raise
 
+    async def async_set_zone_bass(self, zone_id: int, bass: int) -> None:
+        """Set bass level for a zone (0-14, where 7 is neutral)."""
+        try:
+            await self.amp.set_bass(zone_id, bass)
+            await self.async_request_refresh()
+        except Exception:
+            LOG.exception('Failed to set bass for zone %d', zone_id)
+            raise
+
+    async def async_set_zone_treble(self, zone_id: int, treble: int) -> None:
+        """Set treble level for a zone (0-14, where 7 is neutral)."""
+        try:
+            await self.amp.set_treble(zone_id, treble)
+            await self.async_request_refresh()
+        except Exception:
+            LOG.exception('Failed to set treble for zone %d', zone_id)
+            raise
+
+    async def async_set_zone_balance(self, zone_id: int, balance: int) -> None:
+        """Set balance for a zone (0-20, where 10 is center)."""
+        try:
+            await self.amp.set_balance(zone_id, balance)
+            await self.async_request_refresh()
+        except Exception:
+            LOG.exception('Failed to set balance for zone %d', zone_id)
+            raise
+
     async def async_get_zone_snapshot(self, zone_id: int) -> dict[str, Any] | None:
         """Get a snapshot of zone status for later restoration."""
         try:
