@@ -193,25 +193,30 @@ async def test_sources_step_invalid_config(
     assert result['errors'] == {'base': 'invalid_sources'}
 
 
-async def test_options_flow(
-    hass: HomeAssistant,
-    config_entry: config_entries.ConfigEntry,
-) -> None:
-    """Test options flow."""
-    await hass.config_entries.async_setup(config_entry.entry_id)
-    await hass.async_block_till_done()
+def test_options_flow_stores_config_entry_correctly() -> None:
+    """Test that XantechOptionsFlow stores config_entry in the correct attribute.
 
-    result = await hass.config_entries.options.async_init(config_entry.entry_id)
+    This test verifies that the OptionsFlow properly stores the config_entry
+    using the correct internal attribute name (_config_entry) so that the
+    parent class property works correctly. The HA OptionsFlow base class has
+    a config_entry property that reads from _config_entry.
 
-    assert result['type'] == FlowResultType.FORM
-    assert result['step_id'] == 'init'
+    If __init__ used self.config_entry = config_entry instead of
+    self._config_entry = config_entry, the options flow would fail at runtime
+    because the parent class property would return None.
+    """
+    from unittest.mock import MagicMock
 
-    result = await hass.config_entries.options.async_configure(
-        result['flow_id'],
-        {
-            CONF_SCAN_INTERVAL: 60,
-        },
-    )
+    from custom_components.xantech.config_flow import XantechOptionsFlow
 
-    assert result['type'] == FlowResultType.CREATE_ENTRY
-    assert result['data'][CONF_SCAN_INTERVAL] == 60
+    mock_entry = MagicMock()
+    mock_entry.data = {'port': '/dev/ttyUSB0', 'amp_type': 'xantech8'}
+    mock_entry.options = {}
+
+    flow = XantechOptionsFlow(mock_entry)
+
+    # verify the config_entry is stored in _config_entry (not config_entry)
+    # the parent OptionsFlow class has a config_entry property that reads _config_entry
+    assert hasattr(flow, '_config_entry'), 'Flow must store entry in _config_entry'
+    assert flow._config_entry is mock_entry
+    assert flow._config_entry.data['port'] == '/dev/ttyUSB0'

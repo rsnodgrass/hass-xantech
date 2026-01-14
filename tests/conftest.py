@@ -86,15 +86,13 @@ def config_entry(
     config_entry_data: dict[str, Any],
 ) -> Any:
     """Create a mock config entry."""
-    from homeassistant.config_entries import ConfigEntry
+    from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-    entry = ConfigEntry(
-        version=1,
+    entry = MockConfigEntry(
         domain=DOMAIN,
         title='Xantech Multi-Zone Audio (/dev/ttyUSB0)',
         data=config_entry_data,
-        source='user',
-        entry_id='test_entry_id',
+        options={},
         unique_id=f'{DOMAIN}_/dev/ttyUSB0',
     )
     entry.add_to_hass(hass)
