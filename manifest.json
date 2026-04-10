@@ -5,7 +5,7 @@
     "documentation": "https://github.com/rsnodgrass/hass-xantech",
     "issue_tracker": "https://github.com/rsnodgrass/hass-xantech/issues",
     "requirements": [
-        "pyxantech>=0.10.8"
+        "pyxantech>=0.10.7"
     ],
     "homeassistant": "2025.2.0",
     "codeowners": [
