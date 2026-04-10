@@ -1,0 +1,35 @@
+snapshot:
+  name: Snapshot
+  description: Save the current state of a zone for later restoration.
+  target:
+    entity:
+      integration: xantech
+      domain: media_player
+  fields:
+    entity_id:
+      name: Entity
+      description: Media player zone entities to snapshot.
+      required: true
+      selector:
+        entity:
+          integration: xantech
+          domain: media_player
+          multiple: true
+
+restore:
+  name: Restore
+  description: Restore a zone to a previously saved snapshot state.
+  target:
+    entity:
+      integration: xantech
+      domain: media_player
+  fields:
+    entity_id:
+      name: Entity
+      description: Media player zone entities to restore.
+      required: true
+      selector:
+        entity:
+          integration: xantech
+          domain: media_player
+          multiple: true

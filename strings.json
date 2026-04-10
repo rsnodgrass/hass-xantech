@@ -1,0 +1,160 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "title": "Connect to Amplifier",
+                "description": "Configure connection to your Xantech, Dayton Audio, or Monoprice multi-zone amplifier. [☕ Tip the Author](https://buymeacoffee.com/DYks67r)",
+                "data": {
+                    "port": "Serial Port",
+                    "amp_type": "Amplifier Type"
+                },
+                "data_description": {
+                    "port": "Serial port path (e.g., /dev/ttyUSB0) or socket URL (socket://192.168.1.10:888/)",
+                    "amp_type": "Select the type of amplifier you have"
+                }
+            },
+            "zones": {
+                "title": "Name Your Zones",
+                "description": "Give each zone a friendly name.\n\nFor most Xantech models (MRC88, MX88), use two-digit zone IDs: first digit is the controller unit (1-3), second digit is the zone (1-8). For example, 11-18 for controller 1.\n\nStandalone MRAUDIO8x8 units also accept single-digit zones (1-8).",
+                "data": {
+                    "zones_config": "Zone Configuration",
+                    "enable_audio_controls": "Advanced audio controls"
+                },
+                "data_description": {
+                    "zones_config": "One zone per line. Format: ID: Name (e.g., 11: Living Room)",
+                    "enable_audio_controls": "Enable bass, treble, and balance sliders for each zone"
+                }
+            },
+            "sources": {
+                "title": "Name Your Audio Sources",
+                "description": "Name the audio inputs. Source IDs (1-8) correspond to input channels.",
+                "data": {
+                    "sources_config": "Source Configuration"
+                },
+                "data_description": {
+                    "sources_config": "One source per line. Format: ID: Name"
+                }
+            }
+        },
+        "error": {
+            "cannot_connect": "Could not connect. Verify the serial port path and cable connection.",
+            "unknown": "An unexpected error occurred.",
+            "invalid_zones": "Invalid zone IDs for this amplifier type. Check your model's documentation for valid zone numbers.",
+            "invalid_sources": "Could not parse sources. Use format: 1: TV"
+        },
+        "abort": {
+            "already_configured": "This amplifier is already set up."
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "title": "Amplifier Settings",
+                "description": "Choose what to configure.",
+                "menu_options": {
+                    "polling": "Polling Interval",
+                    "connection": "Connection Settings",
+                    "zones": "Edit Zones",
+                    "sources": "Edit Sources",
+                    "features": "Features & Controls"
+                }
+            },
+            "connection": {
+                "title": "Connection Settings",
+                "description": "Update the serial port or network address.",
+                "data": {
+                    "port": "Serial Port"
+                },
+                "data_description": {
+                    "port": "Serial port path (e.g., /dev/ttyUSB0) or socket URL (socket://192.168.1.10:888/)"
+                }
+            },
+            "polling": {
+                "title": "Polling Interval",
+                "description": "Configure how often to poll the amplifier.",
+                "data": {
+                    "scan_interval": "Polling Interval"
+                },
+                "data_description": {
+                    "scan_interval": "How often to poll the amplifier for status updates (in seconds)"
+                }
+            },
+            "zones": {
+                "title": "Edit Zones",
+                "description": "Update zone names. Most Xantech models use two-digit zone IDs (11-18 for controller 1). Standalone MRAUDIO8x8 units also accept 1-8.",
+                "data": {
+                    "zones_config": "Zone Configuration"
+                },
+                "data_description": {
+                    "zones_config": "One zone per line. Format: ID: Name (e.g., 11: Living Room)"
+                }
+            },
+            "sources": {
+                "title": "Edit Sources",
+                "description": "Update audio source names.",
+                "data": {
+                    "sources_config": "Source Configuration"
+                },
+                "data_description": {
+                    "sources_config": "One source per line. Format: ID: Name"
+                }
+            },
+            "features": {
+                "title": "Features & Controls",
+                "description": "Enable or disable optional features.",
+                "data": {
+                    "enable_audio_controls": "Advanced audio controls"
+                },
+                "data_description": {
+                    "enable_audio_controls": "Bass, treble, and balance sliders for each zone"
+                }
+            }
+        }
+    },
+    "selector": {
+        "amp_type": {
+            "options": {
+                "xantech8": "Xantech 8-Zone (MRC88, MX88, MRAUDIO8X8)",
+                "monoprice6": "Monoprice/Dayton 6-Zone (MPR-SG6Z, DAX66, WS66i)",
+                "dax88": "Dayton Audio DAX88 (6+2 Zone)",
+                "zpr68-10": "Xantech ZPR68-10",
+                "sonance6": "Sonance (C4630 SE, 875D MKII)"
+            }
+        }
+    },
+    "services": {
+        "snapshot": {
+            "name": "Snapshot",
+            "description": "Save the current state of a zone for later restoration.",
+            "fields": {
+                "entity_id": {
+                    "name": "Entity",
+                    "description": "Media player zone entities to snapshot."
+                }
+            }
+        },
+        "restore": {
+            "name": "Restore",
+            "description": "Restore a zone to a previously saved snapshot state.",
+            "fields": {
+                "entity_id": {
+                    "name": "Entity",
+                    "description": "Media player zone entities to restore."
+                }
+            }
+        }
+    },
+    "entity": {
+        "number": {
+            "bass": {
+                "name": "Bass"
+            },
+            "treble": {
+                "name": "Treble"
+            },
+            "balance": {
+                "name": "Balance"
+            }
+        }
+    }
+}
