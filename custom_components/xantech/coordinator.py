@@ -94,7 +94,6 @@ class XantechCoordinator(DataUpdateCoordinator[dict[int, dict[str, Any]]]):
         """Set power state for a zone."""
         try:
             await self.amp.set_power(zone_id, power)
-            await self.async_request_refresh()
         except Exception:
             LOG.exception('Failed to set power for zone %d', zone_id)
             raise
@@ -103,7 +102,6 @@ class XantechCoordinator(DataUpdateCoordinator[dict[int, dict[str, Any]]]):
         """Set source for a zone."""
         try:
             await self.amp.set_source(zone_id, source_id)
-            await self.async_request_refresh()
         except Exception:
             LOG.exception('Failed to set source for zone %d', zone_id)
             raise
@@ -112,7 +110,6 @@ class XantechCoordinator(DataUpdateCoordinator[dict[int, dict[str, Any]]]):
         """Set volume for a zone (0-38 scale)."""
         try:
             await self.amp.set_volume(zone_id, volume)
-            await self.async_request_refresh()
         except Exception:
             LOG.exception('Failed to set volume for zone %d', zone_id)
             raise
@@ -121,7 +118,6 @@ class XantechCoordinator(DataUpdateCoordinator[dict[int, dict[str, Any]]]):
         """Set mute state for a zone."""
         try:
             await self.amp.set_mute(zone_id, mute)
-            await self.async_request_refresh()
         except Exception:
             LOG.exception('Failed to set mute for zone %d', zone_id)
             raise
@@ -130,7 +126,6 @@ class XantechCoordinator(DataUpdateCoordinator[dict[int, dict[str, Any]]]):
         """Set bass level for a zone (0-14, where 7 is neutral)."""
         try:
             await self.amp.set_bass(zone_id, bass)
-            await self.async_request_refresh()
         except Exception:
             LOG.exception('Failed to set bass for zone %d', zone_id)
             raise
@@ -139,7 +134,6 @@ class XantechCoordinator(DataUpdateCoordinator[dict[int, dict[str, Any]]]):
         """Set treble level for a zone (0-14, where 7 is neutral)."""
         try:
             await self.amp.set_treble(zone_id, treble)
-            await self.async_request_refresh()
         except Exception:
             LOG.exception('Failed to set treble for zone %d', zone_id)
             raise
@@ -148,7 +142,6 @@ class XantechCoordinator(DataUpdateCoordinator[dict[int, dict[str, Any]]]):
         """Set balance for a zone (0-20, where 10 is center)."""
         try:
             await self.amp.set_balance(zone_id, balance)
-            await self.async_request_refresh()
         except Exception:
             LOG.exception('Failed to set balance for zone %d', zone_id)
             raise
