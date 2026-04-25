@@ -181,7 +181,7 @@ class ZoneMediaPlayer(CoordinatorEntity[XantechCoordinator], MediaPlayerEntity):
         if volume is None:
             return None
         vol_range = self._max_volume - self._min_volume
-        return (volume - self._min_volume) / vol_range
+        return max(0.0, min(1.0, (volume - self._min_volume) / vol_range))
 
     @property
     def is_volume_muted(self) -> bool:
