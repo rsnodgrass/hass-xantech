@@ -48,6 +48,8 @@ class XantechCoordinator(DataUpdateCoordinator[dict[int, dict[str, Any]]]):
         self.zone_ids = zone_ids
         self._consecutive_errors = 0
         self._max_consecutive_errors = 5
+        self._zone_miss_count: dict[int, int] = {z: 0 for z in zone_ids}
+        self._zone_miss_warn_threshold = 5
 
     async def _async_update_data(self) -> dict[int, dict[str, Any]]:
         """Fetch data from the amplifier for all zones.
@@ -55,24 +57,61 @@ class XantechCoordinator(DataUpdateCoordinator[dict[int, dict[str, Any]]]):
         Returns:
             Dictionary mapping zone_id to zone status dict
         """
-        zone_statuses: dict[int, dict[str, Any]] = {}
+        # Start from previous data so zones that fail to poll this cycle
+        # keep their last known state rather than disappearing entirely.
+        zone_statuses: dict[int, dict[str, Any]] = dict(self.data or {})
 
         try:
+            zone_errors = 0
             for zone_id in self.zone_ids:
                 try:
                     status = await self.amp.zone_status(zone_id)
                     if status:
-                        zone_statuses[zone_id] = status
+                        # Merge returned fields into previous state. status may be
+                        # partial (only matched queries) so unmatched fields keep
+                        # their last known values rather than reverting to defaults.
+                        prev = zone_statuses.get(zone_id, {})
+                        zone_statuses[zone_id] = {**prev, **status}
+                        self._zone_miss_count[zone_id] = 0
                     else:
-                        LOG.debug('No status returned for zone %d', zone_id)
+                        self._zone_miss_count[zone_id] = (
+                            self._zone_miss_count.get(zone_id, 0) + 1
+                        )
+                        if (
+                            self._zone_miss_count[zone_id]
+                            >= self._zone_miss_warn_threshold
+                        ):
+                            LOG.warning(
+                                'Zone %d has returned no status for %d consecutive'
+                                ' polls; data may be stale',
+                                zone_id,
+                                self._zone_miss_count[zone_id],
+                            )
+                        else:
+                            LOG.debug(
+                                'No status returned for zone %d,'
+                                ' keeping previous state',
+                                zone_id,
+                            )
                 except Exception:
                     LOG.warning(
                         'Failed to get status for zone %d', zone_id, exc_info=True
                     )
-                    # continue with other zones even if one fails
+                    zone_errors += 1
 
-            # reset error counter on success
-            self._consecutive_errors = 0
+            if zone_errors:
+                self._consecutive_errors += 1
+                if self._consecutive_errors >= self._max_consecutive_errors:
+                    LOG.error(
+                        'Failed to update %s: %d/%d zones errored for %d'
+                        ' consecutive cycles',
+                        self.amp_name,
+                        zone_errors,
+                        len(self.zone_ids),
+                        self._consecutive_errors,
+                    )
+            else:
+                self._consecutive_errors = 0
 
             LOG.debug('Updated %d zones for %s', len(zone_statuses), self.amp_name)
             return zone_statuses
@@ -94,7 +133,6 @@ class XantechCoordinator(DataUpdateCoordinator[dict[int, dict[str, Any]]]):
         """Set power state for a zone."""
         try:
             await self.amp.set_power(zone_id, power)
-            await self.async_request_refresh()
         except Exception:
             LOG.exception('Failed to set power for zone %d', zone_id)
             raise
@@ -103,7 +141,6 @@ class XantechCoordinator(DataUpdateCoordinator[dict[int, dict[str, Any]]]):
         """Set source for a zone."""
         try:
             await self.amp.set_source(zone_id, source_id)
-            await self.async_request_refresh()
         except Exception:
             LOG.exception('Failed to set source for zone %d', zone_id)
             raise
@@ -112,7 +149,6 @@ class XantechCoordinator(DataUpdateCoordinator[dict[int, dict[str, Any]]]):
         """Set volume for a zone (0-38 scale)."""
         try:
             await self.amp.set_volume(zone_id, volume)
-            await self.async_request_refresh()
         except Exception:
             LOG.exception('Failed to set volume for zone %d', zone_id)
             raise
@@ -121,7 +157,6 @@ class XantechCoordinator(DataUpdateCoordinator[dict[int, dict[str, Any]]]):
         """Set mute state for a zone."""
         try:
             await self.amp.set_mute(zone_id, mute)
-            await self.async_request_refresh()
         except Exception:
             LOG.exception('Failed to set mute for zone %d', zone_id)
             raise
@@ -130,7 +165,6 @@ class XantechCoordinator(DataUpdateCoordinator[dict[int, dict[str, Any]]]):
         """Set bass level for a zone (0-14, where 7 is neutral)."""
         try:
             await self.amp.set_bass(zone_id, bass)
-            await self.async_request_refresh()
         except Exception:
             LOG.exception('Failed to set bass for zone %d', zone_id)
             raise
@@ -139,7 +173,6 @@ class XantechCoordinator(DataUpdateCoordinator[dict[int, dict[str, Any]]]):
         """Set treble level for a zone (0-14, where 7 is neutral)."""
         try:
             await self.amp.set_treble(zone_id, treble)
-            await self.async_request_refresh()
         except Exception:
             LOG.exception('Failed to set treble for zone %d', zone_id)
             raise
@@ -148,7 +181,6 @@ class XantechCoordinator(DataUpdateCoordinator[dict[int, dict[str, Any]]]):
         """Set balance for a zone (0-20, where 10 is center)."""
         try:
             await self.amp.set_balance(zone_id, balance)
-            await self.async_request_refresh()
         except Exception:
             LOG.exception('Failed to set balance for zone %d', zone_id)
             raise
