@@ -13,19 +13,15 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from pyxantech import get_device_config
 
 from .const import (
-    AMP_TYPE_SONANCE6,
     CONF_ENABLE_AUDIO_CONTROLS,
     CONF_ZONES,
     DEFAULT_MAX_BALANCE,
     DEFAULT_MAX_BASS,
     DEFAULT_MAX_TREBLE,
+    DEFAULT_MIN_BALANCE,
+    DEFAULT_MIN_BASS,
+    DEFAULT_MIN_TREBLE,
     DOMAIN,
-    SONANCE6_MAX_BALANCE,
-    SONANCE6_MAX_BASS,
-    SONANCE6_MAX_TREBLE,
-    SONANCE6_MIN_BALANCE,
-    SONANCE6_MIN_BASS,
-    SONANCE6_MIN_TREBLE,
 )
 from .coordinator import XantechCoordinator
 
@@ -65,18 +61,13 @@ async def async_setup_entry(
         LOG.debug('Device %s does not support any tone controls', amp_type)
         return
 
-    # get device-specific limits; Sonance6 uses signed ranges
-    if amp_type == AMP_TYPE_SONANCE6:
-        min_bass, max_bass = SONANCE6_MIN_BASS, SONANCE6_MAX_BASS
-        min_treble, max_treble = SONANCE6_MIN_TREBLE, SONANCE6_MAX_TREBLE
-        min_balance, max_balance = SONANCE6_MIN_BALANCE, SONANCE6_MAX_BALANCE
-    else:
-        min_bass = 0
-        max_bass = get_device_config(amp_type, 'max_bass', log_missing=False) or DEFAULT_MAX_BASS
-        min_treble = 0
-        max_treble = get_device_config(amp_type, 'max_treble', log_missing=False) or DEFAULT_MAX_TREBLE
-        min_balance = 0
-        max_balance = get_device_config(amp_type, 'max_balance', log_missing=False) or DEFAULT_MAX_BALANCE
+    # get device-specific limits; note that Sonance6 will pull up signed ranges (-8 to 8) instead of 0-14
+    min_bass = get_device_config(amp_type, 'min_bass', log_missing=False) or DEFAULT_MIN_BASS
+    max_bass = get_device_config(amp_type, 'max_bass', log_missing=False) or DEFAULT_MAX_BASS
+    min_treble = get_device_config(amp_type, 'min_treble', log_missing=False) or DEFAULT_MIN_TREBLE
+    max_treble = get_device_config(amp_type, 'max_treble', log_missing=False) or DEFAULT_MAX_TREBLE
+    min_balance = get_device_config(amp_type, 'min_balance', log_missing=False) or DEFAULT_MIN_BALANCE
+    max_balance = get_device_config(amp_type, 'max_balance', log_missing=False) or DEFAULT_MAX_BALANCE
 
     zones_config = entry.data.get(CONF_ZONES, {})
 
