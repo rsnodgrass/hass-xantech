@@ -14,14 +14,12 @@ from homeassistant.core import Event, HomeAssistant, callback
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from pyxantech import get_device_config
 
 from .const import (
-    AMP_TYPE_SONANCE6,
     CONF_ZONES,
     DOMAIN,
     MAX_VOLUME,
-    SONANCE6_MAX_VOLUME,
-    SONANCE6_MIN_VOLUME,
 )
 from .coordinator import XantechCoordinator
 
@@ -191,16 +189,12 @@ class ZoneMediaPlayer(CoordinatorEntity[XantechCoordinator], MediaPlayerEntity):
     @property
     def _max_volume(self) -> int:
         """Hardware maximum volume for this amp type."""
-        if self._amp_type == AMP_TYPE_SONANCE6:
-            return SONANCE6_MAX_VOLUME
-        return MAX_VOLUME
+        return get_device_config(self._amp_type, 'max_volume', log_missing=False) or MAX_VOLUME
 
     @property
     def _min_volume(self) -> int:
         """Hardware minimum usable volume for this amp type."""
-        if self._amp_type == AMP_TYPE_SONANCE6:
-            return SONANCE6_MIN_VOLUME
-        return 0
+        return get_device_config(self._amp_type, 'min_volume', log_missing=False) or 0
 
     @property
     def source(self) -> str | None:
