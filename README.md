@@ -85,6 +85,19 @@ media_player:
     port: socket://192.168.1.10:888/
 ```
 
+#### Home Assistant Connect AUX-2 / ESPHome serial proxy
+
+Requires Home Assistant 2026.5 or newer. Any RS-232 port that an ESPHome device shares as a
+[serial proxy](https://www.home-assistant.io/connectivity/serial/) can control the amp, for example
+**RS-232 Port 1** on the [Home Assistant Connect AUX-2](https://www.home-assistant.io/connectivity/serial/).
+
+1. Cable the amp to the AUX-2 RS-232 port (see the DB15 cable note above for MX88 models).
+2. Add the integration and pick the AUX-2 port from the **Serial proxies** group in the port list.
+3. To use a USB device path or a `socket://host:port` URL instead, choose **Enter manually**.
+
+The port only appears while the ESPHome device is online. Home Assistant retries the connection
+on its own when the proxy comes back.
+
 #### Lovelace
 
 Example of multiple room volume/power control with a single Spotify source for the entire house (credit: [kcarter13](https://community.home-assistant.io/u/kcarter13/)).

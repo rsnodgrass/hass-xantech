@@ -9,7 +9,7 @@
                     "amp_type": "Amplifier Type"
                 },
                 "data_description": {
-                    "port": "Serial port path (e.g., /dev/ttyUSB0) or socket URL (socket://192.168.1.10:888/)",
+                    "port": "Pick the port from the list (USB serial ports and ESPHome serial proxy ports such as an AUX-2 RS-232 port). To use a device path or a socket URL (socket://192.168.1.10:888/), choose Enter manually.",
                     "amp_type": "Select the type of amplifier you have"
                 }
             },
@@ -66,7 +66,7 @@
                     "port": "Serial Port"
                 },
                 "data_description": {
-                    "port": "Serial port path (e.g., /dev/ttyUSB0) or socket URL (socket://192.168.1.10:888/)"
+                    "port": "Pick the port from the list (USB serial ports and ESPHome serial proxy ports such as an AUX-2 RS-232 port). To use a device path or a socket URL (socket://192.168.1.10:888/), choose Enter manually."
                 }
             },
             "polling": {
