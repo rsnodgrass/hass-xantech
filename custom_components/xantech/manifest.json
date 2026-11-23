@@ -1,13 +1,14 @@
 {
     "domain": "xantech",
     "name": "Xantech Multi-Zone Audio",
-    "version": "0.3.2",
+    "version": "0.4.0",
     "documentation": "https://github.com/rsnodgrass/hass-xantech",
     "issue_tracker": "https://github.com/rsnodgrass/hass-xantech/issues",
-    "requirements": ["pyxantech>=0.10.7"],
-    "homeassistant": "2025.2.0",
+    "requirements": ["pyxantech>=0.11.0"],
+    "homeassistant": "2026.5.0",
     "codeowners": ["@rsnodgrass"],
     "config_flow": true,
+    "dependencies": ["usb"],
     "iot_class": "local_polling",
     "integration_type": "hub"
 }

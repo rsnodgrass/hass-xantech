@@ -72,11 +72,20 @@ async def async_setup_entry(
         min_balance, max_balance = SONANCE6_MIN_BALANCE, SONANCE6_MAX_BALANCE
     else:
         min_bass = 0
-        max_bass = get_device_config(amp_type, 'max_bass', log_missing=False) or DEFAULT_MAX_BASS
+        max_bass = (
+            get_device_config(amp_type, 'max_bass', log_missing=False)
+            or DEFAULT_MAX_BASS
+        )
         min_treble = 0
-        max_treble = get_device_config(amp_type, 'max_treble', log_missing=False) or DEFAULT_MAX_TREBLE
+        max_treble = (
+            get_device_config(amp_type, 'max_treble', log_missing=False)
+            or DEFAULT_MAX_TREBLE
+        )
         min_balance = 0
-        max_balance = get_device_config(amp_type, 'max_balance', log_missing=False) or DEFAULT_MAX_BALANCE
+        max_balance = (
+            get_device_config(amp_type, 'max_balance', log_missing=False)
+            or DEFAULT_MAX_BALANCE
+        )
 
     zones_config = entry.data.get(CONF_ZONES, {})
 

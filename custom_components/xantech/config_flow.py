@@ -20,12 +20,13 @@ from homeassistant.helpers.selector import (
     SelectSelector,
     SelectSelectorConfig,
     SelectSelectorMode,
+    SerialPortSelector,
     TextSelector,
     TextSelectorConfig,
     TextSelectorType,
 )
 from pyxantech import async_get_amp_controller, get_device_config
-from serial import SerialException
+from serialx import SerialException
 import voluptuous as vol
 
 from .const import (
@@ -41,6 +42,7 @@ from .const import (
     DOMAIN,
     SUPPORTED_AMP_TYPES,
 )
+from .port import port_label
 
 LOG = logging.getLogger(__name__)
 
@@ -80,8 +82,8 @@ class XantechConfigFlow(ConfigFlow, domain=DOMAIN):
                     self._data = user_input
                     return await self.async_step_zones()
 
-            except SerialException:
-                LOG.error('Serial connection error to %s', port)
+            except (OSError, TimeoutError, SerialException):
+                LOG.exception('Serial connection error to %s', port_label(port))
                 errors['base'] = 'cannot_connect'
             except Exception:
                 LOG.exception('Unexpected error during connection test')
@@ -91,9 +93,10 @@ class XantechConfigFlow(ConfigFlow, domain=DOMAIN):
             step_id='user',
             data_schema=vol.Schema(
                 {
-                    vol.Required(CONF_PORT, default='/dev/ttyUSB0'): TextSelector(
-                        TextSelectorConfig(type=TextSelectorType.TEXT)
-                    ),
+                    # lists local ports and ESPHome serial proxy ports (e.g. the
+                    # AUX-2 RS-232 ports); "Enter manually" still takes a
+                    # /dev path or a socket://host:port URL
+                    vol.Required(CONF_PORT): SerialPortSelector(),
                     vol.Required(
                         CONF_AMP_TYPE, default=DEFAULT_AMP_TYPE
                     ): SelectSelector(
@@ -174,7 +177,7 @@ class XantechConfigFlow(ConfigFlow, domain=DOMAIN):
             else:
                 self._data[CONF_SOURCES] = sources
                 return self.async_create_entry(
-                    title=f'{DEFAULT_NAME} ({self._data[CONF_PORT]})',
+                    title=f'{DEFAULT_NAME} ({port_label(self._data[CONF_PORT])})',
                     data=self._data,
                 )
 
@@ -333,9 +336,7 @@ class XantechOptionsFlow(OptionsFlow):
             step_id='connection',
             data_schema=vol.Schema(
                 {
-                    vol.Required(CONF_PORT, default=current_port): TextSelector(
-                        TextSelectorConfig(type=TextSelectorType.TEXT)
-                    ),
+                    vol.Required(CONF_PORT, default=current_port): SerialPortSelector(),
                 }
             ),
             errors=errors,

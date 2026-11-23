@@ -7,7 +7,7 @@ from unittest.mock import AsyncMock, patch
 from homeassistant import config_entries
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
-from serial import SerialException
+from serialx import SerialException
 
 from custom_components.xantech.const import (
     CONF_AMP_TYPE,
