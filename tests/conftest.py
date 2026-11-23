@@ -18,6 +18,11 @@ from custom_components.xantech.const import (
 )
 
 
+@pytest.fixture(autouse=True)
+def auto_enable_custom_integrations(enable_custom_integrations: None) -> None:
+    """Let the test hass find custom_components/xantech."""
+
+
 @pytest.fixture
 def mock_amp() -> Generator[MagicMock]:
     """Create a mock amplifier controller."""

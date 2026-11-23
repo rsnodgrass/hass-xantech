@@ -1,5 +1,6 @@
 {
     "name": "Xantech Multi-Zone Audio",
+    "homeassistant": "2026.5.0",
     "render_readme": true,
     "zip_release": false,
     "content_in_root": false

@@ -8,6 +8,7 @@ from homeassistant.components.diagnostics import async_redact_data
 from homeassistant.core import HomeAssistant
 
 from .const import CONF_PORT, CONF_SOURCES, CONF_ZONES
+from .port import port_label
 
 if TYPE_CHECKING:
     from . import XantechConfigEntry
@@ -76,5 +77,6 @@ def _redact_port(port: str) -> str:
     if port.startswith('socket://'):
         # redact IP but keep format visible
         return 'socket://[REDACTED]:[PORT]/'
-    # device paths like /dev/ttyUSB0 are generally safe
-    return port
+    # device paths like /dev/ttyUSB0 are generally safe; serial proxy URLs
+    # are reduced to the port name and ESPHome credentials are dropped
+    return port_label(port)

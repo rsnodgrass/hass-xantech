@@ -12,7 +12,7 @@ from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.typing import ConfigType
 from pyxantech import async_get_amp_controller
-from serial import SerialException
+from serialx import SerialException
 
 from .const import (
     CONF_AMP_TYPE,
@@ -28,6 +28,7 @@ from .const import (
     SERVICE_SNAPSHOT,
 )
 from .coordinator import XantechCoordinator
+from .port import port_label
 
 if TYPE_CHECKING:
     from pyxantech import AmpControlBase
@@ -64,6 +65,8 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 async def async_setup_entry(hass: HomeAssistant, entry: XantechConfigEntry) -> bool:
     """Set up Xantech Multi-Zone Amplifier from a config entry."""
     port = entry.data[CONF_PORT]
+    # the raw port can carry an ESPHome API key, so only log/raise this form
+    shown_port = port_label(port)
     amp_type = entry.data[CONF_AMP_TYPE]
     zones_config = entry.data.get(CONF_ZONES, {})
     sources_config = entry.data.get(CONF_SOURCES, {})
@@ -82,19 +85,23 @@ async def async_setup_entry(hass: HomeAssistant, entry: XantechConfigEntry) -> b
     try:
         amp = await async_get_amp_controller(amp_type, port, hass.loop)
         if not amp:
-            raise ConfigEntryNotReady(f'Failed to connect to {amp_type} at {port}')
-    except SerialException as err:
+            raise ConfigEntryNotReady(
+                f'Failed to connect to {amp_type} at {shown_port}'
+            )
+    except (OSError, TimeoutError, SerialException) as err:
         raise ConfigEntryNotReady(
-            f'Serial connection error to {amp_type} at {port}: {err}'
+            f'Serial connection error to {amp_type} at {shown_port}: {err}'
         ) from err
     except Exception as err:
         LOG.exception('Failed to initialize amplifier')
-        raise ConfigEntryNotReady(f'Failed to initialize {amp_type} at {port}') from err
+        raise ConfigEntryNotReady(
+            f'Failed to initialize {amp_type} at {shown_port}'
+        ) from err
 
-    LOG.info('Connected to %s amplifier at %s', amp_type, port)
+    LOG.info('Connected to %s amplifier at %s', amp_type, shown_port)
 
     # create coordinator
-    amp_name = f'{amp_type}_{port}'.replace('/', '_')
+    amp_name = f'{amp_type}_{shown_port}'.replace('/', '_')
     coordinator = XantechCoordinator(
         hass,
         amp,
