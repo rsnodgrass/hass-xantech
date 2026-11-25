@@ -10,5 +10,8 @@
     "config_flow": true,
     "dependencies": ["usb"],
     "iot_class": "local_polling",
-    "integration_type": "hub"
+    "integration_type": "hub",
+    "zeroconf": [
+        "_linkplay._tcp.local."
+    ]
 }

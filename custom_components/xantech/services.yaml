@@ -33,3 +33,60 @@ restore:
           integration: xantech
           domain: media_player
           multiple: true
+
+export_settings:
+  name: Export amplifier settings
+  description: Save every name, every zone's settings and auto-standby to a backup file in /config/xantech_backups/. DAX88 over the network only.
+  fields:
+    config_entry_id:
+      name: Amplifier
+      description: A DAX88 connected over the network (Wi-Fi/LAN).
+      required: true
+      selector:
+        config_entry:
+          integration: xantech
+
+import_settings:
+  name: Restore amplifier settings
+  description: >-
+    Put names, zone settings and auto-standby back from a backup file in /config/xantech_backups/.
+    DAX88 over the network only. Returns the zones whose volume and mute were left as they are
+    (zones that are on now and off in the backup, when power is not included).
+  fields:
+    config_entry_id:
+      name: Amplifier
+      description: A DAX88 connected over the network (Wi-Fi/LAN).
+      required: true
+      selector:
+        config_entry:
+          integration: xantech
+    backup_file:
+      name: Backup file
+      description: File name in /config/xantech_backups/, as returned by export_settings. A name only, without a folder.
+      required: true
+      selector:
+        text:
+    include_power:
+      name: Include power
+      description: Also switch zones on or off as they were in the backup.
+      default: false
+      selector:
+        boolean:
+
+factory_reset:
+  name: Factory reset amplifier
+  description: Erase every zone and input name and every zone's input, volume, bass, treble and balance on the amplifier. Refused unless "Allow factory reset" is on under the integration's Configure, Factory reset. A new backup is always saved first; its file name is returned.
+  fields:
+    config_entry_id:
+      name: Amplifier
+      description: A DAX88 connected over the network (Wi-Fi/LAN).
+      required: true
+      selector:
+        config_entry:
+          integration: xantech
+    confirm:
+      name: Confirm
+      description: Type FACTORY RESET to confirm.
+      required: true
+      selector:
+        text:

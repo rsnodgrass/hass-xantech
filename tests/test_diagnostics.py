@@ -83,6 +83,27 @@ async def test_diagnostics_output(
     assert result['zone_statuses']['11']['power'] is True
 
 
+async def test_diagnostics_hold_no_names(
+    hass: HomeAssistant,
+    mock_entry_for_diagnostics: MagicMock,
+) -> None:
+    """The file is made to be passed on: no room, input or device name in it."""
+    entry = mock_entry_for_diagnostics
+    entry.title = 'Xantech Multi-Zone Audio (DAX 88_AB12)'
+    entry.data = {
+        **entry.data,
+        'zones': {11: {'name': 'Nursery'}, 12: {'name': 'Study'}},
+        'sources': {1: {'name': 'Turntable'}},
+    }
+    result = await async_get_config_entry_diagnostics(hass, entry)
+    text = str(result)
+    for private in ('Nursery', 'Study', 'Turntable', 'AB12'):
+        assert private not in text
+    # which zones and inputs are set up is still there
+    assert set(result['zone_names']) == {'11', '12'}
+    assert set(result['source_names']) == {'1'}
+
+
 def test_redact_port_serial() -> None:
     """Test port redaction preserves serial device paths."""
     assert _redact_port('/dev/ttyUSB0') == '/dev/ttyUSB0'
@@ -94,4 +115,4 @@ def test_redact_port_serial() -> None:
 def test_redact_port_socket() -> None:
     """Test port redaction hides IP addresses."""
     assert _redact_port('socket://192.168.1.100:888/') == 'socket://[REDACTED]:[PORT]/'
-    assert _redact_port('socket://10.0.0.50:8888/') == 'socket://[REDACTED]:[PORT]/'
+    assert _redact_port('socket://192.0.2.50:8888/') == 'socket://[REDACTED]:[PORT]/'

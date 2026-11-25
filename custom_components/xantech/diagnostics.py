@@ -7,12 +7,15 @@ from typing import TYPE_CHECKING, Any
 from homeassistant.components.diagnostics import async_redact_data
 from homeassistant.core import HomeAssistant
 
-from .const import CONF_PORT, CONF_SOURCES, CONF_ZONES
+from .const import CONF_HOST, CONF_PORT, CONF_SOURCES, CONF_ZONES
+from .failover import describe
+from .network import connection_mode
 from .port import port_label
 
 if TYPE_CHECKING:
     from . import XantechConfigEntry
 
+REDACTED = '[REDACTED]'
 # keys to redact from diagnostics
 REDACT_KEYS = {'serial_number', 'password', 'token', 'api_key'}
 
@@ -30,18 +33,12 @@ async def async_get_config_entry_diagnostics(
         for zone_id, status in coordinator.data.items():
             zone_data[str(zone_id)] = async_redact_data(status, REDACT_KEYS)
 
-    # get zone configuration with names
-    zones_config = entry.data.get(CONF_ZONES, {})
-    zone_names = {
-        str(zone_id): zone_info.get('name', f'Zone {zone_id}')
-        for zone_id, zone_info in zones_config.items()
-    }
-
-    # get sources configuration
-    sources_config = entry.data.get(CONF_SOURCES, {})
+    # Which zones and inputs are set up, not what they are called. A diagnostics
+    # file is made to be passed on, and the names are the user's own (rooms,
+    # devices) or were read from the amplifier.
+    zone_names = {str(zone_id): REDACTED for zone_id in entry.data.get(CONF_ZONES, {})}
     source_names = {
-        str(source_id): source_info.get('name', f'Source {source_id}')
-        for source_id, source_info in sources_config.items()
+        str(source_id): REDACTED for source_id in entry.data.get(CONF_SOURCES, {})
     }
 
     return {
@@ -49,11 +46,16 @@ async def async_get_config_entry_diagnostics(
             'entry_id': entry.entry_id,
             'version': entry.version,
             'domain': entry.domain,
-            'title': entry.title,
+            # holds the name the amplifier reported (by default with part of its
+            # MAC address), or the address of a socket:// port
+            'title': REDACTED,
             'data': {
                 'port': _redact_port(entry.data.get(CONF_PORT, '')),
                 'amp_type': entry.data.get('amp_type'),
+                'connection_mode': connection_mode(dict(entry.data)),
+                'host': '[REDACTED]' if entry.data.get(CONF_HOST) else None,
             },
+            'connection': describe(entry.runtime_data.amp),
             'options': dict(entry.options),
         },
         'coordinator': {

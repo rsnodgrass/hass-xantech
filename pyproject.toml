@@ -22,6 +22,8 @@ dev = [
 line-length = 88
 indent-width = 4
 target-version = "py313"
+# bundled verbatim from the pyxantech fork; linted there
+extend-exclude = ["custom_components/xantech/dax88_network.py"]
 
 [tool.ruff.lint]
 select = [
