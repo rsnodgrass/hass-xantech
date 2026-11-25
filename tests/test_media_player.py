@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import AsyncGenerator
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from homeassistant.components.media_player import MediaPlayerState
@@ -14,7 +15,9 @@ from custom_components.xantech.media_player import ZoneMediaPlayer
 
 
 @pytest.fixture
-def coordinator(hass: HomeAssistant, mock_amp: MagicMock) -> XantechCoordinator:
+async def coordinator(
+    hass: HomeAssistant, mock_amp: MagicMock
+) -> AsyncGenerator[XantechCoordinator]:
     """Create a coordinator for testing."""
     coord = XantechCoordinator(
         hass=hass,
@@ -28,7 +31,9 @@ def coordinator(hass: HomeAssistant, mock_amp: MagicMock) -> XantechCoordinator:
         11: {'power': True, 'volume': 20, 'mute': False, 'source': 1},
         12: {'power': False, 'volume': 0, 'mute': True, 'source': 2},
     }
-    return coord
+    yield coord
+    # cancel the refresh debouncer so no timer outlives the test
+    await coord.async_shutdown()
 
 
 @pytest.fixture
@@ -47,18 +52,24 @@ def sources() -> dict[int, str]:
 
 @pytest.fixture
 def zone_player(
+    hass: HomeAssistant,
     coordinator: XantechCoordinator,
     mock_config_entry: MagicMock,
     sources: dict[int, str],
 ) -> ZoneMediaPlayer:
     """Create a zone media player for testing."""
-    return ZoneMediaPlayer(
+    player = ZoneMediaPlayer(
         coordinator=coordinator,
         entry=mock_config_entry,
         zone_id=11,
         zone_name='Living Room',
         sources=sources,
+        amp_type='xantech8',
     )
+    # commands write optimistic state, which needs hass and an entity_id
+    player.hass = hass
+    player.entity_id = 'media_player.living_room'
+    return player
 
 
 async def test_zone_player_state_on(zone_player: ZoneMediaPlayer) -> None:
@@ -78,6 +89,7 @@ async def test_zone_player_state_off(
         zone_id=12,
         zone_name='Kitchen',
         sources=sources,
+        amp_type='xantech8',
     )
     assert player.state == MediaPlayerState.OFF
 
@@ -127,6 +139,7 @@ async def test_zone_player_icon_off(
         zone_id=12,
         zone_name='Kitchen',
         sources=sources,
+        amp_type='xantech8',
     )
     assert player.icon == 'mdi:speaker-off'
 
@@ -250,7 +263,7 @@ async def test_zone_player_snapshot_and_restore(
         coordinator, 'async_restore_zone', new_callable=AsyncMock
     ) as mock_restore:
         await zone_player.async_restore()
-        mock_restore.assert_called_once_with(snapshot_data)
+        mock_restore.assert_called_once_with(11, snapshot_data)
 
 
 async def test_zone_player_restore_without_snapshot(
@@ -265,3 +278,39 @@ async def test_zone_player_restore_without_snapshot(
         zone_player._status_snapshot = None
         await zone_player.async_restore()
         mock_restore.assert_not_called()
+
+
+async def test_zone_player_unavailable_when_zone_missing(
+    coordinator: XantechCoordinator,
+    zone_player: ZoneMediaPlayer,
+) -> None:
+    """A zone the amp did not answer for is unavailable, not 'off'."""
+    assert zone_player.available
+    coordinator.data = {12: coordinator.data[12]}
+    assert not zone_player.available
+
+
+@pytest.mark.parametrize(
+    ('level', 'step'),
+    [
+        (0.0, 0),
+        (1.0, 38),
+        (0.5, 19),
+        # one press of a card's "+" (2%) from step 8 (21%) and "-" from step 9 (24%)
+        (0.23, 9),
+        (0.22, 8),
+        (0.25, 10),  # exactly between two steps: up
+    ],
+)
+async def test_volume_goes_to_the_nearest_step(
+    zone_player: ZoneMediaPlayer,
+    coordinator: XantechCoordinator,
+    level: float,
+    step: int,
+) -> None:
+    """Rounding down made a small step up do nothing (seen with a dashboard card)."""
+    with patch.object(
+        coordinator, 'async_set_zone_volume', new_callable=AsyncMock
+    ) as mock_volume:
+        await zone_player.async_set_volume_level(level)
+        mock_volume.assert_called_once_with(11, step)

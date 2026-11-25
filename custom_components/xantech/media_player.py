@@ -17,7 +17,9 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
     AMP_TYPE_SONANCE6,
+    CONF_DEVICE_LABEL,
     CONF_ZONES,
+    DEVICE_MODELS,
     DOMAIN,
     MAX_VOLUME,
     SONANCE6_MAX_VOLUME,
@@ -118,11 +120,19 @@ class ZoneMediaPlayer(CoordinatorEntity[XantechCoordinator], MediaPlayerEntity):
         self._attr_name = zone_name
 
         # device info
+        manufacturer, model = DEVICE_MODELS.get(
+            amp_type, ('Xantech', 'Multi-Zone Amplifier')
+        )
+        # the amplifier's own name when it told us (network setup); otherwise the
+        # name existing installs already have, so nothing gets renamed
+        label = entry.data.get(CONF_DEVICE_LABEL)
+        if not isinstance(label, str) or not label:
+            label = f'Xantech {coordinator.amp_name}'
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, f'{coordinator.amp_name}')},
-            name=f'Xantech {coordinator.amp_name}',
-            manufacturer='Xantech',
-            model='Multi-Zone Amplifier',
+            name=label,
+            manufacturer=manufacturer,
+            model=model,
         )
 
         self._entry = entry
@@ -154,6 +164,24 @@ class ZoneMediaPlayer(CoordinatorEntity[XantechCoordinator], MediaPlayerEntity):
         """Mark a command as complete."""
         self._pending_commands = max(0, self._pending_commands - 1)
 
+    def _command_failed(self, *keys: str) -> None:
+        """A command did not reach the amplifier: an error, or it was cancelled.
+
+        What it was going to set is no longer shown, or the next step (volume up)
+        would build on a value the amplifier never had. Not while a later command
+        is still on its way: its value is newer. The amplifier is then asked what
+        it has, because nothing else would correct the display before the next poll.
+        """
+        if self._pending_commands > 1:
+            return
+        for key in keys:
+            self._optimistic_state.pop(key, None)
+        if self.hass is not None:
+            self.async_write_ha_state()
+        self.coordinator.hass.async_create_task(
+            self.coordinator.async_request_refresh()
+        )
+
     def _clear_optimistic(self) -> None:
         """Clear optimistic state only when no commands are pending."""
         if self._pending_commands == 0:
@@ -162,9 +190,18 @@ class ZoneMediaPlayer(CoordinatorEntity[XantechCoordinator], MediaPlayerEntity):
     @callback
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
-        # only clear optimistic state if no commands are in flight
-        self._clear_optimistic()
+        # only clear optimistic state if no commands are in flight, and not on a
+        # poll that commands overtook: it is older than what the zone was set to
+        if not self.coordinator.zone_overtaken(self._zone_id):
+            self._clear_optimistic()
         super()._handle_coordinator_update()
+
+    @property
+    def available(self) -> bool:
+        """Available only while the amp answers for this zone."""
+        if not super().available or not self.coordinator.data:
+            return False
+        return self._zone_id in self.coordinator.data
 
     @property
     def state(self) -> MediaPlayerState:
@@ -236,6 +273,9 @@ class ZoneMediaPlayer(CoordinatorEntity[XantechCoordinator], MediaPlayerEntity):
         self._set_optimistic(power=True)
         try:
             await self.coordinator.async_set_zone_power(self._zone_id, True)
+        except BaseException:
+            self._command_failed('power')
+            raise
         finally:
             self._command_complete()
 
@@ -245,6 +285,9 @@ class ZoneMediaPlayer(CoordinatorEntity[XantechCoordinator], MediaPlayerEntity):
         self._set_optimistic(power=False)
         try:
             await self.coordinator.async_set_zone_power(self._zone_id, False)
+        except BaseException:
+            self._command_failed('power')
+            raise
         finally:
             self._command_complete()
 
@@ -254,17 +297,25 @@ class ZoneMediaPlayer(CoordinatorEntity[XantechCoordinator], MediaPlayerEntity):
         self._set_optimistic(mute=mute)
         try:
             await self.coordinator.async_set_zone_mute(self._zone_id, mute)
+        except BaseException:
+            self._command_failed('mute')
+            raise
         finally:
             self._command_complete()
 
     async def async_set_volume_level(self, volume: float) -> None:
         """Set volume level, range 0-1.0."""
         vol_range = self._max_volume - self._min_volume
-        amp_volume = int(volume * vol_range) + self._min_volume
+        # the nearest step: rounding down swallowed a small step up (the amplifier
+        # has 38 steps, so +2% from step 8 asked for 8.76 and stayed at 8)
+        amp_volume = int(volume * vol_range + 0.5) + self._min_volume
         LOG.debug('Setting zone %d volume to %d', self._zone_id, amp_volume)
         self._set_optimistic(volume=amp_volume)
         try:
             await self.coordinator.async_set_zone_volume(self._zone_id, amp_volume)
+        except BaseException:
+            self._command_failed('volume')
+            raise
         finally:
             self._command_complete()
 
@@ -277,6 +328,9 @@ class ZoneMediaPlayer(CoordinatorEntity[XantechCoordinator], MediaPlayerEntity):
         self._set_optimistic(volume=new_volume)
         try:
             await self.coordinator.async_set_zone_volume(self._zone_id, new_volume)
+        except BaseException:
+            self._command_failed('volume')
+            raise
         finally:
             self._command_complete()
 
@@ -289,6 +343,9 @@ class ZoneMediaPlayer(CoordinatorEntity[XantechCoordinator], MediaPlayerEntity):
         self._set_optimistic(volume=new_volume)
         try:
             await self.coordinator.async_set_zone_volume(self._zone_id, new_volume)
+        except BaseException:
+            self._command_failed('volume')
+            raise
         finally:
             self._command_complete()
 
@@ -310,6 +367,9 @@ class ZoneMediaPlayer(CoordinatorEntity[XantechCoordinator], MediaPlayerEntity):
         self._set_optimistic(source=source_id)
         try:
             await self.coordinator.async_set_zone_source(self._zone_id, source_id)
+        except BaseException:
+            self._command_failed('source')
+            raise
         finally:
             self._command_complete()
 
@@ -323,7 +383,9 @@ class ZoneMediaPlayer(CoordinatorEntity[XantechCoordinator], MediaPlayerEntity):
     async def async_restore(self) -> None:
         """Restore saved state."""
         if self._status_snapshot:
-            await self.coordinator.async_restore_zone(self._status_snapshot)
+            await self.coordinator.async_restore_zone(
+                self._zone_id, self._status_snapshot
+            )
             LOG.info('Restored previous state for zone %d', self._zone_id)
         else:
             LOG.warning(

@@ -3,67 +3,155 @@
         "step": {
             "user": {
                 "title": "Connect to Amplifier",
+                "description": "How is Home Assistant connected to the amplifier? [☕ Tip the Author](https://buymeacoffee.com/DYks67r)",
+                "menu_options": {
+                    "serial": "RS-232: cable, or over IP (Xantech MRIP, ser2net, ESP bridge)",
+                    "network": "Network: the amplifier's built-in Wi-Fi/LAN module (Linkplay, e.g. DAX88)"
+                }
+            },
+            "zones": {
+                "title": "Which zones do you use?",
+                "description": "Tick the zones that have speakers (or an amplifier) connected. They are numbered as on the amplifier, with the name in brackets where one is known. (Over RS-232 and in entity ids, most Xantech, Monoprice and Dayton models call zone 1 of the first amplifier 11, and use 21-28 and 31-38 for expansion units.)",
+                "data": {
+                    "zone_ids": "Zones in use",
+                    "enable_audio_controls": "Bass, treble and balance sliders"
+                },
+                "data_description": {
+                    "enable_audio_controls": "Adds bass, treble and balance controls for each zone"
+                }
+            },
+            "sources": {
+                "title": "Name your inputs",
+                "description": "Name the inputs you use. Leave an input empty to hide it.",
+                "data": {
+                    "source_1": "Input 1",
+                    "source_2": "Input 2",
+                    "source_3": "Input 3",
+                    "source_4": "Input 4",
+                    "source_5": "Input 5",
+                    "source_6": "Input 6",
+                    "source_7": "Input 7",
+                    "source_8": "Input 8"
+                }
+            },
+            "serial": {
+                "title": "Connect over RS-232",
                 "description": "Configure connection to your Xantech, Dayton Audio, or Monoprice multi-zone amplifier. [☕ Tip the Author](https://buymeacoffee.com/DYks67r)",
                 "data": {
                     "port": "Serial Port",
                     "amp_type": "Amplifier Type"
                 },
                 "data_description": {
-                    "port": "Pick the port from the list (USB serial ports and ESPHome serial proxy ports such as an AUX-2 RS-232 port). To use a device path or a socket URL (socket://192.168.1.10:888/), choose Enter manually.",
+                    "port": "Pick the port from the list (USB serial ports and ESPHome serial proxy ports such as an AUX-2 RS-232 port). For a device path, or RS-232 over IP as socket://host:port (Xantech MRIP on MX88ai/MX88vi, ser2net, an ESP32 bridge), choose Enter manually.",
                     "amp_type": "Select the type of amplifier you have"
                 }
             },
-            "zones": {
-                "title": "Name Your Zones",
-                "description": "Give each zone a friendly name.\n\nFor most Xantech models (MRC88, MX88), use two-digit zone IDs: first digit is the controller unit (1-3), second digit is the zone (1-8). For example, 11-18 for controller 1.\n\nStandalone MRAUDIO8x8 units also accept single-digit zones (1-8).",
+            "network": {
+                "title": "Connect over the amplifier's Wi-Fi/LAN module",
+                "description": "For amplifiers with a built-in Linkplay Wi-Fi/LAN module that speaks the DAX88 control protocol (Dayton Audio DAX88 and identical rebadged models). The amplifier is checked before it is added. Amplifiers with an Ethernet RS-232 module (such as Xantech MRIP) or a serial-to-network adapter use RS-232 with a socket:// address instead. Dayton recommends RS-232 for the most reliable control.",
                 "data": {
-                    "zones_config": "Zone Configuration"
+                    "host": "IP address or host name"
                 },
                 "data_description": {
-                    "zones_config": "One zone per line. Format: ID: Name (e.g., 11: Living Room)"
+                    "host": "For example 192.0.2.50"
                 }
             },
-            "sources": {
-                "title": "Name Your Audio Sources",
-                "description": "Name the audio inputs. Source IDs (1-8) correspond to input channels.",
+            "zeroconf_confirm": {
+                "title": "Dayton Audio DAX88 found",
+                "description": "Found **{name}** on your network at {host}. Set it up over the network (Wi-Fi/LAN)? You can add an RS-232 fallback later under Configure → Connection.\n\n**Already set up here over RS-232?** Then do not add it again. Close this, open that amplifier's Configure → Connection, and add this address there."
+            },
+            "zone_names": {
+                "title": "Name your zones",
+                "description": "Give each zone the name you want to see in Home Assistant. Names read from the amplifier are filled in when it has them.",
                 "data": {
-                    "sources_config": "Source Configuration"
-                },
-                "data_description": {
-                    "sources_config": "One source per line. Format: ID: Name"
+                    "zone_1": "Zone 1",
+                    "zone_2": "Zone 2",
+                    "zone_3": "Zone 3",
+                    "zone_4": "Zone 4",
+                    "zone_5": "Zone 5",
+                    "zone_6": "Zone 6",
+                    "zone_7": "Zone 7",
+                    "zone_8": "Zone 8",
+                    "zone_9": "Zone 9",
+                    "zone_10": "Zone 10",
+                    "zone_11": "Zone 1",
+                    "zone_12": "Zone 2",
+                    "zone_13": "Zone 3",
+                    "zone_14": "Zone 4",
+                    "zone_15": "Zone 5",
+                    "zone_16": "Zone 6",
+                    "zone_17": "Zone 7",
+                    "zone_18": "Zone 8",
+                    "zone_19": "Zone 9",
+                    "zone_20": "Amplifier 2, zone 0",
+                    "zone_21": "Amplifier 2, zone 1",
+                    "zone_22": "Amplifier 2, zone 2",
+                    "zone_23": "Amplifier 2, zone 3",
+                    "zone_24": "Amplifier 2, zone 4",
+                    "zone_25": "Amplifier 2, zone 5",
+                    "zone_26": "Amplifier 2, zone 6",
+                    "zone_27": "Amplifier 2, zone 7",
+                    "zone_28": "Amplifier 2, zone 8",
+                    "zone_29": "Amplifier 2, zone 9",
+                    "zone_30": "Amplifier 3, zone 0",
+                    "zone_31": "Amplifier 3, zone 1",
+                    "zone_32": "Amplifier 3, zone 2",
+                    "zone_33": "Amplifier 3, zone 3",
+                    "zone_34": "Amplifier 3, zone 4",
+                    "zone_35": "Amplifier 3, zone 5",
+                    "zone_36": "Amplifier 3, zone 6",
+                    "zone_37": "Amplifier 3, zone 7",
+                    "zone_38": "Amplifier 3, zone 8"
                 }
             }
         },
         "error": {
             "cannot_connect": "Could not connect. Verify the serial port path and cable connection.",
+            "port_in_use": "Another amplifier in Home Assistant already uses that port.",
             "unknown": "An unexpected error occurred.",
-            "invalid_zones": "Invalid zone IDs for this amplifier type. Check your model's documentation for valid zone numbers.",
-            "invalid_sources": "Could not parse sources. Use format: 1: TV"
+            "invalid_zones": "Tick at least one zone.",
+            "invalid_sources": "Name at least one input.",
+            "not_dax88": "That device answered, but its Wi-Fi/LAN module doesn't answer the amplifier control protocol.",
+            "cannot_connect_network": "Could not reach the amplifier on the network. Check the IP address and that the amplifier is on."
         },
         "abort": {
-            "already_configured": "This amplifier is already set up."
-        }
+            "already_configured": "This amplifier is already set up.",
+            "not_dax88": "That device isn't a Dayton Audio DAX88.",
+            "cannot_connect_network": "Could not reach the amplifier on the network. Check the IP address and that the amplifier is on."
+        },
+        "flow_title": "{name}"
     },
     "options": {
         "step": {
             "init": {
-                "title": "Amplifier Settings",
-                "description": "Choose what to configure.",
+                "title": "Amplifier settings",
+                "description": "Choose what to change. A page is saved when you submit it and brings you back here; submitted unchanged, it changes nothing. Names stored on the amplifier, auto-standby, backup and factory reset use the amplifier's network (Wi-Fi/LAN) module and appear once the connection includes it.",
                 "menu_options": {
-                    "polling": "Polling Interval",
-                    "connection": "Connection Settings",
-                    "zones": "Edit Zones",
-                    "sources": "Edit Sources"
+                    "connection": "Connection (RS-232, network, fallback)",
+                    "zones": "Zones",
+                    "sources": "Inputs",
+                    "features": "Bass, treble and balance sliders",
+                    "polling": "Polling interval",
+                    "amp_names": "Names stored on the amplifier",
+                    "standby": "Auto-standby",
+                    "backup": "Backup and restore",
+                    "factory_reset": "Factory reset",
+                    "done": "Done"
                 }
             },
             "connection": {
-                "title": "Connection Settings",
-                "description": "Update the serial port or network address.",
+                "title": "Connection",
+                "description": "Choose how Home Assistant talks to the amplifier. A fallback mode uses the first connection and switches to the second if it stops answering, then goes back when the first works again.\n\n- **RS-232**: a serial port, or RS-232 over IP as socket://host:port (Xantech MRIP, ser2net, ESP bridges). Works with every model.\n- **Network**: the amplifier's built-in Wi-Fi/LAN (Linkplay) module, checked before saving. Factory reset and names stored on the amplifier need this connection.",
                 "data": {
-                    "port": "Serial Port"
+                    "connection_mode": "Connection",
+                    "port": "RS-232 port or socket:// address",
+                    "fallback_port": "Second RS-232 port or socket:// address",
+                    "host": "Wi-Fi/LAN module address (IP or host name)"
                 },
                 "data_description": {
-                    "port": "Pick the port from the list (USB serial ports and ESPHome serial proxy ports such as an AUX-2 RS-232 port). To use a device path or a socket URL (socket://192.168.1.10:888/), choose Enter manually."
+                    "port": "Pick the port from the list, or choose Enter manually for a device path (/dev/ttyUSB0) or RS-232 over IP (socket://192.0.2.60:4999)",
+                    "fallback_port": "Only for \"RS-232, fall back to a second RS-232 link\"",
+                    "host": "Only for modes that use the network module, e.g. 192.0.2.50"
                 }
             },
             "polling": {
@@ -77,25 +165,220 @@
                 }
             },
             "zones": {
-                "title": "Edit Zones",
-                "description": "Update zone names. Most Xantech models use two-digit zone IDs (11-18 for controller 1). Standalone MRAUDIO8x8 units also accept 1-8.",
+                "title": "Zones in use",
+                "description": "Tick the zones that have speakers (or an amplifier) connected. They are numbered as on the amplifier, with the name in brackets where one is known. (Over RS-232 and in entity ids, most Xantech, Monoprice and Dayton models call zone 1 of the first amplifier 11, and use 21-28 and 31-38 for expansion units.)",
                 "data": {
-                    "zones_config": "Zone Configuration"
-                },
-                "data_description": {
-                    "zones_config": "One zone per line. Format: ID: Name (e.g., 11: Living Room)"
+                    "zone_ids": "Zones in use"
                 }
             },
             "sources": {
-                "title": "Edit Sources",
-                "description": "Update audio source names.",
+                "title": "Inputs",
+                "description": "Name the inputs you use. Leave an input empty to hide it.",
                 "data": {
-                    "sources_config": "Source Configuration"
+                    "source_1": "Input 1",
+                    "source_2": "Input 2",
+                    "source_3": "Input 3",
+                    "source_4": "Input 4",
+                    "source_5": "Input 5",
+                    "source_6": "Input 6",
+                    "source_7": "Input 7",
+                    "source_8": "Input 8"
+                }
+            },
+            "features": {
+                "title": "Bass, treble and balance sliders",
+                "description": "Enable or disable optional features.",
+                "data": {
+                    "enable_audio_controls": "Bass, treble and balance sliders"
                 },
                 "data_description": {
-                    "sources_config": "One source per line. Format: ID: Name"
+                    "enable_audio_controls": "Adds bass, treble and balance controls for each zone"
                 }
+            },
+            "factory_reset": {
+                "title": "Factory reset",
+                "description": "A factory reset erases every zone and input name and every zone's input, volume, bass, treble and balance on the amplifier. It can only be undone from a backup.\n\nIt is switched off unless you allow it here first. Once allowed, the reset is offered below for a limited time.",
+                "menu_options": {
+                    "factory_reset_switch": "Allow or block factory reset",
+                    "factory_reset_now": "Reset the amplifier to factory settings…",
+                    "init": "Back"
+                }
+            },
+            "zone_names": {
+                "title": "Zone names",
+                "description": "The names shown in Home Assistant.",
+                "data": {
+                    "zone_1": "Zone 1",
+                    "zone_2": "Zone 2",
+                    "zone_3": "Zone 3",
+                    "zone_4": "Zone 4",
+                    "zone_5": "Zone 5",
+                    "zone_6": "Zone 6",
+                    "zone_7": "Zone 7",
+                    "zone_8": "Zone 8",
+                    "zone_9": "Zone 9",
+                    "zone_10": "Zone 10",
+                    "zone_11": "Zone 1",
+                    "zone_12": "Zone 2",
+                    "zone_13": "Zone 3",
+                    "zone_14": "Zone 4",
+                    "zone_15": "Zone 5",
+                    "zone_16": "Zone 6",
+                    "zone_17": "Zone 7",
+                    "zone_18": "Zone 8",
+                    "zone_19": "Zone 9",
+                    "zone_20": "Amplifier 2, zone 0",
+                    "zone_21": "Amplifier 2, zone 1",
+                    "zone_22": "Amplifier 2, zone 2",
+                    "zone_23": "Amplifier 2, zone 3",
+                    "zone_24": "Amplifier 2, zone 4",
+                    "zone_25": "Amplifier 2, zone 5",
+                    "zone_26": "Amplifier 2, zone 6",
+                    "zone_27": "Amplifier 2, zone 7",
+                    "zone_28": "Amplifier 2, zone 8",
+                    "zone_29": "Amplifier 2, zone 9",
+                    "zone_30": "Amplifier 3, zone 0",
+                    "zone_31": "Amplifier 3, zone 1",
+                    "zone_32": "Amplifier 3, zone 2",
+                    "zone_33": "Amplifier 3, zone 3",
+                    "zone_34": "Amplifier 3, zone 4",
+                    "zone_35": "Amplifier 3, zone 5",
+                    "zone_36": "Amplifier 3, zone 6",
+                    "zone_37": "Amplifier 3, zone 7",
+                    "zone_38": "Amplifier 3, zone 8"
+                }
+            },
+            "amp_names": {
+                "title": "Names stored on the amplifier",
+                "description": "These names are kept on the amplifier and shown in its own app. Each name can be up to {max} characters (letters, digits and common punctuation), and all of them together up to {limit}. They use {used} of {limit} now.\n\nRenaming the device also renames it on your network.",
+                "data": {
+                    "device_name": "Device name",
+                    "amp_zone_1": "Zone 1",
+                    "amp_zone_2": "Zone 2",
+                    "amp_zone_3": "Zone 3",
+                    "amp_zone_4": "Zone 4",
+                    "amp_zone_5": "Zone 5",
+                    "amp_zone_6": "Zone 6",
+                    "amp_zone_7": "Zone 7",
+                    "amp_zone_8": "Zone 8",
+                    "amp_input_1": "Input 1",
+                    "amp_input_2": "Input 2",
+                    "amp_input_3": "Input 3",
+                    "amp_input_4": "Input 4",
+                    "amp_input_5": "Input 5",
+                    "amp_input_6": "Input 6",
+                    "amp_input_7": "Input 7",
+                    "use_in_ha": "Use these names in Home Assistant too"
+                },
+                "data_description": {
+                    "use_in_ha": "Renames the zones and inputs Home Assistant already shows. Entity IDs stay the same."
+                }
+            },
+            "standby": {
+                "title": "Auto-standby",
+                "description": "When this is on, the amplifier switches all zones off after the set time without an input signal (30 minutes to 79 hours 30 minutes). When it is off, zones stay on until they are switched off.",
+                "data": {
+                    "standby_enabled": "Auto-standby",
+                    "standby_hours": "Hours",
+                    "standby_minutes": "Minutes"
+                }
+            },
+            "backup": {
+                "title": "Backup and restore",
+                "description": "A backup holds every name, every zone's input, volume, bass, treble, balance, mute and power, and the auto-standby setting. Backups are kept in /config/xantech_backups.",
+                "menu_options": {
+                    "backup_now": "Back up the amplifier now",
+                    "restore_backup": "Restore a backup to the amplifier",
+                    "init": "Back"
+                }
+            },
+            "backup_done": {
+                "title": "Backup saved",
+                "description": "Saved as **{backup_file}** in /config/xantech_backups."
+            },
+            "restore_backup": {
+                "title": "Restore a backup",
+                "description": "Names, zone settings and auto-standby on the amplifier are set to the values in the backup. Only values that differ are changed. Backups of another amplifier are listed last and marked.",
+                "data": {
+                    "backup_file": "Backup",
+                    "include_power": "Also switch zones on or off"
+                },
+                "data_description": {
+                    "include_power": "Off: zones keep their current on/off state. A zone that is on now and off in the backup then also keeps its volume and mute, unless the backup is quieter."
+                }
+            },
+            "restore_done": {
+                "title": "Backup restored",
+                "description": "Names, zone settings and auto-standby from **{backup_file}** are back on the amplifier, and its zones are on or off as in the backup."
+            },
+            "restore_done_no_power": {
+                "title": "Backup restored",
+                "description": "Names, zone settings and auto-standby from **{backup_file}** are back on the amplifier. Zones were not switched on or off."
+            },
+            "restore_done_left_alone": {
+                "title": "Backup restored, with an exception",
+                "description": "Names, zone settings and auto-standby from **{backup_file}** are back on the amplifier. Zones were not switched on or off.\n\nNot changed: the volume and mute of {zones}, on now and off in the backup. Raising the volume or unmuting there would have been heard. Switch off what should be off and restore again, or tick \"Also switch zones on or off\"."
+            },
+            "factory_reset_switch": {
+                "title": "Allow factory reset",
+                "description": "Turning this on allows a factory reset for {minutes} minutes, or until one reset has been done. Then it turns itself off. While it is on, Home Assistant shows a notification.\n\nThe reset still asks you to type a confirmation, and a backup is saved first.",
+                "data": {
+                    "allow_factory_reset": "Allow factory reset"
+                }
+            },
+            "factory_reset_now": {
+                "title": "Reset the amplifier to factory settings",
+                "description": "This erases every zone and input name and every zone's input, volume, bass, treble and balance on the amplifier.\n\nA new backup of the current settings is always saved first and checked. If it cannot be saved, or could not be put back afterwards, the amplifier is not reset. Then the amplifier's network module restarts, which takes about two minutes.\n\nType **{phrase}** to go ahead.",
+                "data": {
+                    "confirm": "Confirmation"
+                }
+            },
+            "factory_reset_done": {
+                "title": "Factory reset done",
+                "description": "The amplifier is back to factory settings, and factory reset is switched off again. Your previous settings are in **{backup_file}**: restore them under Backup and restore."
             }
+        },
+        "error": {
+            "not_dax88": "That device answered, but it isn't a Dayton Audio DAX88.",
+            "cannot_connect_network": "Could not reach the amplifier on the network. Check the IP address and that the amplifier is on.",
+            "different_amp": "That address belongs to a different amplifier.",
+            "port_required": "This connection mode needs a serial port.",
+            "host_required": "This connection mode needs a network address.",
+            "fallback_port_required": "This connection mode needs a second RS-232 port or address.",
+            "no_linkplay_control": "That device answered, but its Wi-Fi/LAN module doesn't answer the amplifier control protocol.",
+            "no_amp_control": "The amplifier's Wi-Fi/LAN module answered, but its control connection did not. Nothing was saved. Check that nothing else holds that connection, or restart the amplifier.",
+            "invalid_zones": "Tick at least one zone.",
+            "invalid_sources": "Name at least one input.",
+            "name_invalid": "Use 1 to 16 letters, digits or common punctuation.",
+            "names_total": "All names together are too long for the amplifier (132 characters). Shorten some of them.",
+            "amp_no_answer": "The amplifier's network module did not answer. Nothing was changed.",
+            "amp_stopped_answering": "The amplifier's network module stopped answering. The change may or may not have been saved. Open this page again to see what the amplifier holds.",
+            "standby_range": "Choose a time from 30 minutes to 79 hours 30 minutes.",
+            "not_stored": "The amplifier did not keep the new value.",
+            "confirm_mismatch": "That is not the confirmation phrase.",
+            "port_in_use": "Another amplifier in Home Assistant already uses that port.",
+            "same_port": "The second RS-232 link must be a different port from the first.",
+            "amp_in_other_entry": "That amplifier's network module is already set up as another amplifier here. Remove that one first, or keep this amplifier on RS-232 only."
+        },
+        "progress": {
+            "restoring": "Restoring the backup to the amplifier. This can take a minute. If you close this window the restore still finishes, and a notification tells you how it went.",
+            "resetting": "Saving a backup, resetting the amplifier and waiting for its network module to restart. This takes about two minutes. If you close this window, a notification tells you how it went and which backup to restore."
+        },
+        "abort": {
+            "not_loaded": "The amplifier is not connected right now, or it was reloaded meanwhile. Nothing was changed. Try again.",
+            "needs_network": "This needs the amplifier's network (Wi-Fi/LAN) module. Add it under Connection.",
+            "different_amp": "The device at this amplifier's network address is a different amplifier now. Nothing was changed. Enter this amplifier's current address under Connection.",
+            "amp_no_answer": "The amplifier's network module did not answer. Nothing was changed on the amplifier.",
+            "no_backups": "There are no backups in /config/xantech_backups yet.",
+            "bad_backup_file": "That backup file could not be used, so nothing was changed on the amplifier.\n\n{detail}",
+            "switch_off": "Factory reset is switched off. Allow it first.",
+            "confirm_mismatch": "That is not the confirmation phrase. Nothing was reset.",
+            "unknown": "Something unexpected went wrong. See the Home Assistant log.",
+            "backup_not_saved": "The backup file could not be saved in /config/xantech_backups. Nothing was changed on the amplifier.\n\n{detail}",
+            "restore_incomplete": "The restore did not finish. Some settings may already be back on the amplifier.\n\n{detail}\n\nRun the restore again: it only sends what still differs.",
+            "backup_unusable": "The amplifier was **not** reset. A backup was saved, but it could not be put back afterwards:\n\n{detail}\n\nFix that on the amplifier first (for example under Names stored on the amplifier), then try again.",
+            "reset_unconfirmed": "The factory reset was sent, but the amplifier did not confirm it or has not come back on the network yet. **Treat the amplifier as reset.**\n\nWhen it is back on the network, restore **{backup_file}** under Backup and restore. Factory reset is switched off again.",
+            "reset_running": "A factory reset of this amplifier is still running. Nothing was changed. Try again when it has finished."
         }
     },
     "selector": {
@@ -106,6 +389,21 @@
                 "dax88": "Dayton Audio DAX88 (6+2 Zone)",
                 "zpr68-10": "Xantech ZPR68-10",
                 "sonance6": "Sonance (C4630 SE, 875D MKII)"
+            }
+        },
+        "connection_mode": {
+            "options": {
+                "serial": "RS-232 only (cable or over IP)",
+                "network": "Network module only (Wi-Fi/LAN)",
+                "serial_fallback_network": "RS-232, fall back to the network module",
+                "network_fallback_serial": "Network module, fall back to RS-232",
+                "serial_fallback_serial": "RS-232, fall back to a second RS-232 link"
+            }
+        },
+        "standby_minutes": {
+            "options": {
+                "0": "0 minutes",
+                "30": "30 minutes"
             }
         }
     },
@@ -127,6 +425,71 @@
                 "entity_id": {
                     "name": "Entity",
                     "description": "Media player zone entities to restore."
+                }
+            }
+        },
+        "export_settings": {
+            "name": "Export amplifier settings",
+            "description": "Save every name, every zone's settings and auto-standby to a backup file in /config/xantech_backups/. DAX88 over the network only.",
+            "fields": {
+                "config_entry_id": {
+                    "name": "Amplifier",
+                    "description": "A DAX88 connected over the network."
+                }
+            }
+        },
+        "import_settings": {
+            "name": "Restore amplifier settings",
+            "description": "Put names, zone settings and auto-standby back from a backup file. Returns the zones whose volume and mute were left as they are: zones that are on now and off in the backup, when power is not included.",
+            "fields": {
+                "config_entry_id": {
+                    "name": "Amplifier",
+                    "description": "A DAX88 connected over the network."
+                },
+                "backup_file": {
+                    "name": "Backup file",
+                    "description": "File name in /config/xantech_backups/."
+                },
+                "include_power": {
+                    "name": "Include power",
+                    "description": "Also switch zones on or off as in the backup."
+                }
+            }
+        },
+        "factory_reset": {
+            "name": "Factory reset amplifier",
+            "description": "Erase every zone and input name and every zone's settings on the amplifier. Refused unless \"Allow factory reset\" is on under the integration's Configure → Factory reset. A new backup is always saved first; its file name is returned.",
+            "fields": {
+                "config_entry_id": {
+                    "name": "Amplifier",
+                    "description": "A DAX88 connected over the network."
+                },
+                "confirm": {
+                    "name": "Confirm",
+                    "description": "Type FACTORY RESET to confirm."
+                }
+            }
+        }
+    },
+    "entity": {
+        "number": {
+            "bass": {
+                "name": "Bass"
+            },
+            "treble": {
+                "name": "Treble"
+            },
+            "balance": {
+                "name": "Balance"
+            }
+        },
+        "sensor": {
+            "connection": {
+                "name": "Connection",
+                "state": {
+                    "serial": "RS-232",
+                    "network": "Network module",
+                    "serial_backup": "Second RS-232 link"
                 }
             }
         }

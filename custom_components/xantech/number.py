@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Awaitable, Callable
 from typing import TYPE_CHECKING, Any
 
 from homeassistant.components.number import NumberEntity, NumberMode
@@ -12,27 +13,27 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from pyxantech import get_device_config
 
-from .const import (
-    AMP_TYPE_SONANCE6,
-    CONF_ENABLE_AUDIO_CONTROLS,
-    CONF_ZONES,
-    DEFAULT_MAX_BALANCE,
-    DEFAULT_MAX_BASS,
-    DEFAULT_MAX_TREBLE,
-    DOMAIN,
-    SONANCE6_MAX_BALANCE,
-    SONANCE6_MAX_BASS,
-    SONANCE6_MAX_TREBLE,
-    SONANCE6_MIN_BALANCE,
-    SONANCE6_MIN_BASS,
-    SONANCE6_MIN_TREBLE,
+from .audio_controls import (
+    CONTROL_BALANCE,
+    CONTROL_BASS,
+    CONTROL_TREBLE,
+    ControlRange,
+    get_control_range,
 )
+from .const import CONF_ENABLE_AUDIO_CONTROLS, CONF_ZONES, DOMAIN
 from .coordinator import XantechCoordinator
 
 if TYPE_CHECKING:
     from . import XantechConfigEntry
 
 LOG = logging.getLogger(__name__)
+
+# control key -> (name suffix, icon)
+_CONTROLS: dict[str, tuple[str, str]] = {
+    CONTROL_BASS: ('Bass', 'mdi:speaker-wireless'),
+    CONTROL_TREBLE: ('Treble', 'mdi:sine-wave'),
+    CONTROL_BALANCE: ('Balance', 'mdi:speaker-multiple'),
+}
 
 
 async def async_setup_entry(
@@ -51,84 +52,33 @@ async def async_setup_entry(
     amp_type = data.amp_type
 
     # check device capabilities for tone controls
-    supports_bass = (
-        get_device_config(amp_type, 'supports_bass', log_missing=False) or False
-    )
-    supports_treble = (
-        get_device_config(amp_type, 'supports_treble', log_missing=False) or False
-    )
-    supports_balance = (
-        get_device_config(amp_type, 'supports_balance', log_missing=False) or False
-    )
-
-    if not (supports_bass or supports_treble or supports_balance):
+    supported = [
+        control
+        for control in _CONTROLS
+        if get_device_config(amp_type, f'supports_{control}', log_missing=False)
+    ]
+    if not supported:
         LOG.debug('Device %s does not support any tone controls', amp_type)
         return
 
-    # get device-specific limits; Sonance6 uses signed ranges
-    if amp_type == AMP_TYPE_SONANCE6:
-        min_bass, max_bass = SONANCE6_MIN_BASS, SONANCE6_MAX_BASS
-        min_treble, max_treble = SONANCE6_MIN_TREBLE, SONANCE6_MAX_TREBLE
-        min_balance, max_balance = SONANCE6_MIN_BALANCE, SONANCE6_MAX_BALANCE
-    else:
-        min_bass = 0
-        max_bass = (
-            get_device_config(amp_type, 'max_bass', log_missing=False)
-            or DEFAULT_MAX_BASS
-        )
-        min_treble = 0
-        max_treble = (
-            get_device_config(amp_type, 'max_treble', log_missing=False)
-            or DEFAULT_MAX_TREBLE
-        )
-        min_balance = 0
-        max_balance = (
-            get_device_config(amp_type, 'max_balance', log_missing=False)
-            or DEFAULT_MAX_BALANCE
-        )
-
+    ranges = {control: get_control_range(amp_type, control) for control in supported}
     zones_config = entry.data.get(CONF_ZONES, {})
 
     entities: list[ZoneAudioControlNumber] = []
-
     for zone_id_str, zone_data in zones_config.items():
         zone_id = int(zone_id_str)
         zone_name = zone_data.get('name', f'Zone {zone_id}')
-
-        # only create entities for supported controls
-        if supports_bass:
-            entities.append(
-                ZoneBassNumber(
-                    coordinator=coordinator,
-                    entry=entry,
-                    zone_id=zone_id,
-                    zone_name=zone_name,
-                    min_value=min_bass,
-                    max_value=max_bass,
-                )
+        entities.extend(
+            ZoneAudioControlNumber(
+                coordinator=coordinator,
+                entry=entry,
+                zone_id=zone_id,
+                zone_name=zone_name,
+                control_key=control,
+                control_range=ranges[control],
             )
-        if supports_treble:
-            entities.append(
-                ZoneTrebleNumber(
-                    coordinator=coordinator,
-                    entry=entry,
-                    zone_id=zone_id,
-                    zone_name=zone_name,
-                    min_value=min_treble,
-                    max_value=max_treble,
-                )
-            )
-        if supports_balance:
-            entities.append(
-                ZoneBalanceNumber(
-                    coordinator=coordinator,
-                    entry=entry,
-                    zone_id=zone_id,
-                    zone_name=zone_name,
-                    min_value=min_balance,
-                    max_value=max_balance,
-                )
-            )
+            for control in supported
+        )
 
     LOG.info(
         'Adding %d audio control entities for %s',
@@ -139,7 +89,12 @@ async def async_setup_entry(
 
 
 class ZoneAudioControlNumber(CoordinatorEntity[XantechCoordinator], NumberEntity):
-    """Base class for zone audio control number entities."""
+    """Bass, treble or balance control for one zone.
+
+    Values are shown relative to the neutral point where it is known
+    (e.g. DAX88 bass -12..+12 dB, 0 = flat) and converted to the raw amp
+    value when sent.
+    """
 
     _attr_has_entity_name = True
     _attr_mode = NumberMode.SLIDER
@@ -152,27 +107,28 @@ class ZoneAudioControlNumber(CoordinatorEntity[XantechCoordinator], NumberEntity
         zone_id: int,
         zone_name: str,
         control_key: str,
-        name_suffix: str,
-        min_value: int,
-        max_value: int,
+        control_range: ControlRange,
     ) -> None:
         """Initialize the audio control number entity."""
         super().__init__(coordinator)
 
+        name_suffix, icon = _CONTROLS[control_key]
         self._zone_id = zone_id
         self._zone_name = zone_name
         self._control_key = control_key
+        self._range = control_range
         self._entry = entry
 
-        # set device-specific min/max values
-        self._attr_native_min_value = float(min_value)
-        self._attr_native_max_value = float(max_value)
+        self._attr_native_min_value = float(control_range.native_min)
+        self._attr_native_max_value = float(control_range.native_max)
+        self._attr_native_unit_of_measurement = control_range.unit
+        self._attr_icon = icon
 
-        # optimistic state tracking
-        self._optimistic_value: int | None = None
+        # optimistic state tracking (raw amp value)
+        self._optimistic_raw: int | None = None
         self._pending_commands: int = 0
 
-        # entity attributes
+        # entity attributes - unique_id format must stay stable
         self._attr_unique_id = (
             f'{DOMAIN}_{coordinator.amp_name}_zone_{zone_id}_{control_key}'.lower()
             .replace(' ', '_')
@@ -192,144 +148,64 @@ class ZoneAudioControlNumber(CoordinatorEntity[XantechCoordinator], NumberEntity
             return self.coordinator.data.get(self._zone_id, {})
         return {}
 
-    def _set_optimistic(self, value: int) -> None:
-        """Set optimistic value and trigger UI update."""
-        self._optimistic_value = value
-        self._pending_commands += 1
-        self.async_write_ha_state()
-
-    def _command_complete(self) -> None:
-        """Mark a command as complete."""
-        self._pending_commands = max(0, self._pending_commands - 1)
-
-    def _clear_optimistic(self) -> None:
-        """Clear optimistic state only when no commands are pending."""
-        if self._pending_commands == 0:
-            self._optimistic_value = None
+    @property
+    def available(self) -> bool:
+        """Available only while the amp answers for this zone."""
+        return super().available and bool(self._zone_status)
 
     @callback
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
-        self._clear_optimistic()
+        # not on a poll that commands overtook: it is older than the value set last
+        if self._pending_commands == 0 and not self.coordinator.zone_overtaken(
+            self._zone_id
+        ):
+            self._optimistic_raw = None
         super()._handle_coordinator_update()
 
     @property
     def native_value(self) -> float | None:
         """Return the current value."""
-        if self._optimistic_value is not None:
-            return float(self._optimistic_value)
-        value = self._zone_status.get(self._control_key)
-        if value is not None:
-            return float(value)
-        return None
+        raw = self._optimistic_raw
+        if raw is None:
+            raw = self._zone_status.get(self._control_key)
+        if raw is None:
+            return None
+        return float(self._range.from_raw(int(raw)))
 
-
-class ZoneBassNumber(ZoneAudioControlNumber):
-    """Number entity for zone bass control."""
-
-    _attr_icon = 'mdi:speaker-wireless'
-
-    def __init__(
-        self,
-        coordinator: XantechCoordinator,
-        entry: XantechConfigEntry,
-        zone_id: int,
-        zone_name: str,
-        min_value: int,
-        max_value: int,
-    ) -> None:
-        """Initialize the bass control entity."""
-        super().__init__(
-            coordinator=coordinator,
-            entry=entry,
-            zone_id=zone_id,
-            zone_name=zone_name,
-            control_key='bass',
-            name_suffix='Bass',
-            min_value=min_value,
-            max_value=max_value,
-        )
+    def _setter(self) -> Callable[[int, int], Awaitable[None]]:
+        return {
+            CONTROL_BASS: self.coordinator.async_set_zone_bass,
+            CONTROL_TREBLE: self.coordinator.async_set_zone_treble,
+            CONTROL_BALANCE: self.coordinator.async_set_zone_balance,
+        }[self._control_key]
 
     async def async_set_native_value(self, value: float) -> None:
-        """Set the bass level."""
-        bass_value = int(value)
-        LOG.debug('Setting bass=%d for zone %d', bass_value, self._zone_id)
-        self._set_optimistic(bass_value)
-        try:
-            await self.coordinator.async_set_zone_bass(self._zone_id, bass_value)
-        finally:
-            self._command_complete()
-
-
-class ZoneTrebleNumber(ZoneAudioControlNumber):
-    """Number entity for zone treble control."""
-
-    _attr_icon = 'mdi:sine-wave'
-
-    def __init__(
-        self,
-        coordinator: XantechCoordinator,
-        entry: XantechConfigEntry,
-        zone_id: int,
-        zone_name: str,
-        min_value: int,
-        max_value: int,
-    ) -> None:
-        """Initialize the treble control entity."""
-        super().__init__(
-            coordinator=coordinator,
-            entry=entry,
-            zone_id=zone_id,
-            zone_name=zone_name,
-            control_key='treble',
-            name_suffix='Treble',
-            min_value=min_value,
-            max_value=max_value,
+        """Set the control, converting to the raw amp value."""
+        raw = self._range.to_raw(value)
+        LOG.debug(
+            'Setting %s=%s (raw %d) for zone %d',
+            self._control_key,
+            value,
+            raw,
+            self._zone_id,
         )
-
-    async def async_set_native_value(self, value: float) -> None:
-        """Set the treble level."""
-        treble_value = int(value)
-        LOG.debug('Setting treble=%d for zone %d', treble_value, self._zone_id)
-        self._set_optimistic(treble_value)
+        self._optimistic_raw = raw
+        self._pending_commands += 1
+        self.async_write_ha_state()
         try:
-            await self.coordinator.async_set_zone_treble(self._zone_id, treble_value)
+            await self._setter()(self._zone_id, raw)
+        except BaseException:
+            # It did not reach the amplifier (an error, or it was cancelled): stop
+            # showing it and ask the amplifier what it has. Not while a later
+            # command is still on its way: its value is newer.
+            if self._pending_commands <= 1:
+                self._optimistic_raw = None
+                if self.hass is not None:
+                    self.async_write_ha_state()
+                self.coordinator.hass.async_create_task(
+                    self.coordinator.async_request_refresh()
+                )
+            raise
         finally:
-            self._command_complete()
-
-
-class ZoneBalanceNumber(ZoneAudioControlNumber):
-    """Number entity for zone balance control."""
-
-    _attr_icon = 'mdi:speaker-multiple'
-
-    def __init__(
-        self,
-        coordinator: XantechCoordinator,
-        entry: XantechConfigEntry,
-        zone_id: int,
-        zone_name: str,
-        min_value: int,
-        max_value: int,
-    ) -> None:
-        """Initialize the balance control entity."""
-        super().__init__(
-            coordinator=coordinator,
-            entry=entry,
-            zone_id=zone_id,
-            zone_name=zone_name,
-            control_key='balance',
-            name_suffix='Balance',
-            min_value=min_value,
-            max_value=max_value,
-        )
-
-    async def async_set_native_value(self, value: float) -> None:
-        """Set the balance level."""
-        balance_value = int(value)
-        LOG.debug('Setting balance=%d for zone %d', balance_value, self._zone_id)
-        self._set_optimistic(balance_value)
-        try:
-            await self.coordinator.async_set_zone_balance(self._zone_id, balance_value)
-        finally:
-            self._command_complete()
+            self._pending_commands = max(0, self._pending_commands - 1)
