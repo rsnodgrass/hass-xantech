@@ -8,7 +8,7 @@ from homeassistant.components.media_player import MediaPlayerState
 from homeassistant.core import HomeAssistant
 import pytest
 
-from custom_components.xantech.const import MAX_VOLUME
+from custom_components.xantech.const import AMP_TYPE_XANTECH8, MAX_VOLUME
 from custom_components.xantech.coordinator import XantechCoordinator
 from custom_components.xantech.media_player import ZoneMediaPlayer
 
@@ -47,18 +47,24 @@ def sources() -> dict[int, str]:
 
 @pytest.fixture
 def zone_player(
+    hass: HomeAssistant,
     coordinator: XantechCoordinator,
     mock_config_entry: MagicMock,
     sources: dict[int, str],
 ) -> ZoneMediaPlayer:
     """Create a zone media player for testing."""
-    return ZoneMediaPlayer(
+    player = ZoneMediaPlayer(
         coordinator=coordinator,
         entry=mock_config_entry,
         zone_id=11,
         zone_name='Living Room',
         sources=sources,
+        amp_type=AMP_TYPE_XANTECH8,
     )
+    # commands write optimistic state, which needs the entity attached to hass
+    player.hass = hass
+    player.entity_id = 'media_player.living_room'
+    return player
 
 
 async def test_zone_player_state_on(zone_player: ZoneMediaPlayer) -> None:
@@ -78,6 +84,7 @@ async def test_zone_player_state_off(
         zone_id=12,
         zone_name='Kitchen',
         sources=sources,
+        amp_type=AMP_TYPE_XANTECH8,
     )
     assert player.state == MediaPlayerState.OFF
 
@@ -127,6 +134,7 @@ async def test_zone_player_icon_off(
         zone_id=12,
         zone_name='Kitchen',
         sources=sources,
+        amp_type=AMP_TYPE_XANTECH8,
     )
     assert player.icon == 'mdi:speaker-off'
 
